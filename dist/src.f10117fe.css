@@ -1,0 +1,39 @@
+body {
+  font-family: sans-serif;
+  font-size: 30px;
+}
+
+.row {
+display: flex;
+}
+
+.cell {
+display: flex;
+align-items: center;
+justify-content: center;
+border: 1px solid rgba(0,0,0, 0.2);
+box-sizing: border-box;
+height: 60px;
+width: 60px;
+}
+
+.water {
+background-color: #424fdb;
+opacity: 1;
+background-image:  repeating-radial-gradient( circle at 0 0, transparent 0, #424fdb 10px ), repeating-linear-gradient( #262a7855, #262a78 );
+}
+
+.grass {
+background-color: rgba(0,255,0, 0.6);
+}
+
+.dirt {
+background-color: #B67437;
+opacity: 1;
+background-image:  radial-gradient(#784e26 0.75px, transparent 0.75px), radial-gradient(#784e26 0.75px, #B67437 0.75px);
+background-size: 10px 15px;
+background-position: 0 0,20px 20px;
+}
+
+
+/*# sourceMappingURL=/src.f10117fe.css.map */
