@@ -1,11 +1,31 @@
 import { Animal, Cell, Dirt, Plant, Water } from "./classes";
 
+interface IPopulateBoardParams {
+  boardState: Cell[][];
+  boardSize: number;
+  elementCount: number;
+  elementType: "tree" | "grass" | "water" | "lion" | "zebra";
+}
+
+function populateBoard({ boardState, boardSize }: IPopulateBoardParams) {
+  for (
+    let elementsCreated = 0;
+    elementsCreated < elementCount;
+    elementsCreated++
+  ) {
+    const randomCellX = chance.integer({ min: 0, max: boardSize });
+    const randomCellY = chance.integer({ min: 0, max: boardSize });
+    if (boardState[randomCellX][randomCellY].contents.length === 1) {
+      boardState[randomCellX][randomCellY].contents.push(new Animal("lion"));
+    }
+  }
+}
+
 interface ICreateInitialBoardParams {
   board: HTMLElement;
   boardSize?: number;
   lionCount?: number;
   zebraCount?: number;
-  grassCount?: number;
   treeCount?: number;
   resourceDensity?: "low" | "medium" | "high";
 }
@@ -14,12 +34,17 @@ interface ICreateInitialBoardParams {
 export function createInitialBoard({
   board,
   boardSize = 20,
-  resourceDensity,
-  grassCount,
-  treeCount,
-  zebraCount,
-  lionCount
+  resourceDensity = "low",
+  treeCount = 1,
+  zebraCount = 1,
+  lionCount = 1,
 }: ICreateInitialBoardParams) {
+  // Throw error if user tries to create too many elements.
+  if (treeCount + zebraCount + lionCount > boardSize * boardSize) {
+    throw new RangeError(
+      "Number of animals and plants exceeds bopard size! Please increase board size or lower number of animals and plants."
+    );
+  }
   // Create a 2D array of cells that represents the board
   const boardState: Cell[][] = [];
 
@@ -37,8 +62,17 @@ export function createInitialBoard({
     }
     boardState.push(newRow);
   }
-
   // Now that every cell contains dirt, randomly insert plants and animals
+  
+
+  // TODO make this a generic function usable for any type
+  for (let lionsCreated = 0; lionsCreated < lionCount; lionsCreated++) {
+    const randomCellX = chance.integer({ min: 0, max: boardSize });
+    const randomCellY = chance.integer({ min: 0, max: boardSize });
+    if (boardState[randomCellX][randomCellY].contents.length === 1) {
+      boardState[randomCellX][randomCellY].contents.push(new Animal("lion"));
+    }
+  }
 
   return boardState;
 }
