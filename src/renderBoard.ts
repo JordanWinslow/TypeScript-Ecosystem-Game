@@ -9,7 +9,7 @@ export function renderBoard({ board, boardState }: IRenderBoardParams) {
   console.log("Rendering Board State: ", boardState);
   // Clear the board so we don't end up creating new boards every iteration
   // NAIVE and SLOW approach since we tear down every div and rebuild from scratch
-  board.innerHTML = null;
+  board.innerHTML = "";
   // Loop through every row
   boardState.forEach((row) => {
     // Create an HTML Div element to hold each cell in an individual row
