@@ -120,10 +120,30 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 })({"src/classes.ts":[function(require,module,exports) {
 "use strict";
 
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+    };
+    return _extendStatics(d, b);
+  };
+  return function (d, b) {
+    if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+    _extendStatics(d, b);
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Water = exports.Dirt = exports.Plant = exports.Animal = exports.Cell = void 0;
+exports.Water = exports.Dirt = exports.Plant = exports.Zebra = exports.Lion = exports.Animal = exports.Cell = void 0;
 var Cell = /** @class */function () {
   function Cell(_a) {
     var x = _a.x,
@@ -139,23 +159,80 @@ var Cell = /** @class */function () {
   Cell.prototype.updateContents = function (contents) {
     this.contents = contents;
   };
+  Cell.prototype.getNearestCellIndexes = function () {
+    return [[this.x - 1, this.y], [this.x + 1, this.y], [this.x, this.y - 1], [this.x, this.y + 1]];
+  };
   return Cell;
 }();
 exports.Cell = Cell;
 var Animal = /** @class */function () {
-  function Animal(type) {
-    this.type = type;
+  function Animal() {
     this.speed = 1;
     this.age = "adult";
-    this.health = 100;
+    this.health = 10;
     this.thirstLevel = 0;
     this.hungerLevel = 0;
     this.reproductiveUrge = 0;
     this.isObstacle = true;
+    this.deceased = false;
   }
+  Animal.prototype.getGreatestDesire = function () {
+    var wantsToReproduce = this.reproductiveUrge > this.thirstLevel && this.reproductiveUrge > this.hungerLevel && this.hungerLevel <= 5 && this.thirstLevel <= 5;
+    var wantsToEat = this.hungerLevel !== 0 && this.hungerLevel > this.thirstLevel;
+    var wantsToDrink = this.thirstLevel !== 0 && this.thirstLevel >= this.hungerLevel;
+    if (wantsToReproduce) {
+      return "looking for mate";
+    } else if (wantsToEat) {
+      return "looking for food";
+    } else if (wantsToDrink) {
+      return "looking for water";
+    }
+  };
+  Animal.prototype.increaseDesires = function () {
+    this.hungerLevel++;
+    this.thirstLevel++;
+    this.reproductiveUrge++;
+  };
+  Animal.prototype.eat = function () {
+    // could update this method to take in a food source with varying nutritionalValue
+    if (this.health < 10) {
+      this.health++;
+    }
+    if (this.hungerLevel > 0) {
+      this.hungerLevel = this.hungerLevel - 3;
+    }
+  };
+  Animal.prototype.loseHealth = function (healthToLose) {
+    this.health = this.health - healthToLose;
+    if (this.health <= 0) {
+      this.deceased = true;
+    }
+  };
   return Animal;
 }();
 exports.Animal = Animal;
+var Lion = /** @class */function (_super) {
+  __extends(Lion, _super);
+  function Lion() {
+    var _this = _super !== null && _super.apply(this, arguments) || this;
+    _this.type = "lion";
+    _this.icon = "🦁";
+    return _this;
+  }
+  return Lion;
+}(Animal);
+exports.Lion = Lion;
+var Zebra = /** @class */function (_super) {
+  __extends(Zebra, _super);
+  function Zebra() {
+    var _this = _super !== null && _super.apply(this, arguments) || this;
+    _this.type = "zebra";
+    _this.icon = "🦓";
+    return _this;
+  }
+  return Zebra;
+}(Animal);
+exports.Zebra = Zebra;
 var Plant = /** @class */function () {
   function Plant(type) {
     this.type = type;
@@ -196,25 +273,46 @@ exports.createInitialBoard = void 0;
 var classes_1 = require("./classes");
 function populateBoard(_a) {
   var boardState = _a.boardState,
-    boardSize = _a.boardSize;
+    boardSize = _a.boardSize,
+    elementCount = _a.elementCount,
+    elementType = _a.elementType;
+  console.log("Populating board with " + elementCount + " " + elementType);
   for (var elementsCreated = 0; elementsCreated < elementCount; elementsCreated++) {
     var randomCellX = chance.integer({
       min: 0,
-      max: boardSize
+      max: boardSize - 1
     });
     var randomCellY = chance.integer({
       min: 0,
-      max: boardSize
+      max: boardSize - 1
     });
-    if (boardState[randomCellX][randomCellY].contents.length === 1) {
-      boardState[randomCellX][randomCellY].contents.push(new classes_1.Animal("lion"));
+    var randomCellContents = boardState[randomCellX][randomCellY].contents;
+    var cellContainsOnlyDirt = randomCellContents.length === 1;
+    if (cellContainsOnlyDirt) {
+      switch (elementType) {
+        case "lion":
+          randomCellContents.push(new classes_1.Lion());
+          break;
+        case "zebra":
+          randomCellContents.push(new classes_1.Zebra());
+          break;
+        case "tree":
+          randomCellContents.push(new classes_1.Plant("tree"));
+          break;
+        case "grass":
+          randomCellContents.push(new classes_1.Plant("grass"));
+          break;
+        case "water":
+          // first remove the dirt to replace it with water
+          randomCellContents.pop();
+          randomCellContents.push(new classes_1.Water());
+      }
     }
   }
 }
-// Initialize the board with empty cells
+// Initialize the board with dirt, then populate it with plants, animals and water
 function createInitialBoard(_a) {
-  var board = _a.board,
-    _b = _a.boardSize,
+  var _b = _a.boardSize,
     boardSize = _b === void 0 ? 20 : _b,
     _c = _a.resourceDensity,
     resourceDensity = _c === void 0 ? "low" : _c,
@@ -246,21 +344,32 @@ function createInitialBoard(_a) {
     }
     boardState.push(newRow);
   }
-  // Now that every cell contains dirt, randomly insert plants and animals
-  // TODO make this a generic function usable for any type
-  for (var lionsCreated = 0; lionsCreated < lionCount; lionsCreated++) {
-    var randomCellX = chance.integer({
-      min: 0,
-      max: boardSize
+  // Now that every cell contains dirt, randomly insert plants, animals and water
+  var grassAndWaterCount = resourceDensity === "high" ? Math.round(boardSize / 2) : resourceDensity === "medium" ? Math.round(boardSize / 4) : Math.round(boardSize / 6);
+  var elementsToCreate = [{
+    type: "tree",
+    count: treeCount
+  }, {
+    type: "zebra",
+    count: zebraCount
+  }, {
+    type: "lion",
+    count: lionCount
+  }, {
+    type: "grass",
+    count: grassAndWaterCount
+  }, {
+    type: "water",
+    count: grassAndWaterCount
+  }];
+  elementsToCreate.forEach(function (element) {
+    populateBoard({
+      boardState: boardState,
+      boardSize: boardSize,
+      elementType: element.type,
+      elementCount: element.count
     });
-    var randomCellY = chance.integer({
-      min: 0,
-      max: boardSize
-    });
-    if (boardState[randomCellX][randomCellY].contents.length === 1) {
-      boardState[randomCellX][randomCellY].contents.push(new classes_1.Animal("lion"));
-    }
-  }
+  });
   return boardState;
 }
 exports.createInitialBoard = createInitialBoard;
@@ -277,7 +386,7 @@ function renderBoard(_a) {
   console.log("Rendering Board State: ", boardState);
   // Clear the board so we don't end up creating new boards every iteration
   // NAIVE and SLOW approach since we tear down every div and rebuild from scratch
-  board.innerHTML = null;
+  board.innerHTML = "";
   // Loop through every row
   boardState.forEach(function (row) {
     // Create an HTML Div element to hold each cell in an individual row
@@ -316,7 +425,118 @@ function renderBoard(_a) {
   });
 }
 exports.renderBoard = renderBoard;
-},{}],"node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
+},{}],"src/beginGameLoop.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.beginGameLoop = void 0;
+var classes_1 = require("./classes");
+var renderBoard_1 = require("./renderBoard");
+// function created by chatgpt and updated with a criteria function
+function findNearestCell(x, y, array, criteria) {
+  var minDistance = Number.MAX_VALUE;
+  var nearestElement = null;
+  for (var i = 0; i < array.length; i++) {
+    for (var j = 0; j < array[i].length; j++) {
+      if (array[i][j] && criteria(array[i][j])) {
+        // only check for elements matching criteria such as "call contains water"
+        var distance = Math.sqrt(Math.pow(i - x, 2) + Math.pow(j - y, 2)); // calculate Euclidean distance
+        if (distance < minDistance) {
+          minDistance = distance;
+          nearestElement = array[i][j];
+        }
+      }
+    }
+  }
+  return nearestElement;
+}
+function beginGameLoop(_a) {
+  var initialBoardState = _a.initialBoardState,
+    board = _a.board;
+  var boardState = initialBoardState;
+  (0, renderBoard_1.renderBoard)({
+    boardState: boardState,
+    board: board
+  });
+  // -----------------------------------------------------
+  var gameLoop = setInterval(function () {
+    console.log("ROUND BEGINNING");
+    boardState.forEach(function (row) {
+      row.forEach(function (cell) {
+        var cellContainsSomething = cell.contents.length > 1;
+        if (cellContainsSomething) {
+          cell.contents.forEach(function (element) {
+            if (element instanceof classes_1.Animal) {
+              console.log("Calculating " + element.type + " Desires");
+              // increase hunger, thirst and reproductive urge
+              element.increaseDesires();
+              // get animals greatest desire to determine what they should move towards
+              var desire = element.getGreatestDesire();
+              console.log(element.type + "'s greatest desire: " + desire);
+              switch (desire) {
+                case "looking for water":
+                  var nearestDesire = findNearestCell(cell.x, cell.y, boardState, function (cell) {
+                    return cell.contents.some(function (element) {
+                      return element instanceof classes_1.Water;
+                    });
+                  });
+                  // Check if animal is already next to their greatest desire
+                  if ((Math.abs(nearestDesire.x - cell.x) === 1 || nearestDesire.x === cell.x) && (Math.abs(nearestDesire.y - cell.y) === 1 || nearestDesire.y === cell.y)) {
+                    break;
+                  }
+                  var newXValue = cell.x > nearestDesire.x ? cell.x - 1 : cell.x < nearestDesire.x ? cell.x + 1 : cell.x;
+                  var newYValue = cell.y > nearestDesire.y ? cell.y - 1 : cell.y < nearestDesire.y ? cell.y + 1 : cell.y;
+                  var availableCell = null;
+                  // Look for a non-obstacle cell that is adjacent to the current position of the moving animal
+                  var adjacentCells = [[cell.x - 1, cell.y], [cell.x + 1, cell.y], [cell.x, cell.y - 1], [cell.x, cell.y + 1], [cell.x + 1, cell.y + 1], [cell.x - 1, cell.y - 1], [cell.x + 1, cell.y - 1], [cell.x - 1, cell.y + 1]];
+                  for (var _i = 0, adjacentCells_1 = adjacentCells; _i < adjacentCells_1.length; _i++) {
+                    var _a = adjacentCells_1[_i],
+                      x = _a[0],
+                      y = _a[1];
+                    if (x >= 0 && x < boardState.length && y >= 0 && y < boardState[0].length && !boardState[x][y].contents.some(function (element) {
+                      return element.isObstacle;
+                    })) {
+                      availableCell = boardState[x][y];
+                      break;
+                    }
+                  }
+                  // If no obstacle, move along the optimal path towards nearestDesire
+                  if (!boardState[newXValue][newYValue].contents.some(function (element) {
+                    return element.isObstacle;
+                  })) {
+                    var movingAnimal = boardState[cell.x][cell.y].contents.pop();
+                    boardState[newXValue][newYValue].contents.push(movingAnimal);
+                    // if obstacle, choose the first available cell with no obstacle
+                  } else if (availableCell) {
+                    var movingAnimal = boardState[cell.x][cell.y].contents.pop();
+                    availableCell.contents.push(movingAnimal);
+                  } else {
+                    // if no open spaces and no optimal path available, don't do anything.
+                  }
+                  break;
+              }
+            }
+          });
+        }
+      });
+    });
+    // Now that we have updated the board state we need to re-render it!
+    (0, renderBoard_1.renderBoard)({
+      boardState: boardState,
+      board: board
+    });
+  }, 3000);
+  // ---------------------- CREATE GAME CONTROLS ----------------------
+  window.addEventListener("keyup", function (event) {
+    if (event.key === "Escape") {
+      clearInterval(gameLoop);
+    }
+  });
+}
+exports.beginGameLoop = beginGameLoop;
+},{"./classes":"src/classes.ts","./renderBoard":"src/renderBoard.ts"}],"node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
 var bundleURL = null;
 function getBundleURLCached() {
   if (!bundleURL) {
@@ -378,33 +598,26 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 var createInitialBoard_1 = require("./createInitialBoard");
-var renderBoard_1 = require("./renderBoard");
+var beginGameLoop_1 = require("./beginGameLoop");
 require("./styles.css");
 // The board is the actual HTML we want to render. Not to be mistaken for the board state which is Cell[][]
 var board = document.getElementById("board");
 try {
   // The board state is the JavaScript object representing each cell and it's contents.
   var initialBoardState = (0, createInitialBoard_1.createInitialBoard)({
-    board: board,
-    boardSize: 10
+    boardSize: 15,
+    lionCount: 3,
+    zebraCount: 5,
+    resourceDensity: "low"
   });
-  // The render method takes the board state and renders it to the board HTML
-  (0, renderBoard_1.renderBoard)({
-    boardState: initialBoardState,
+  (0, beginGameLoop_1.beginGameLoop)({
+    initialBoardState: initialBoardState,
     board: board
   });
 } catch (error) {
   alert(error);
 }
-// setInterval(
-//   () =>
-//     renderBoard({
-//       board,
-//       boardState: createInitialBoard({ board, boardSize: 10 })
-//     }),
-//   3000
-// );
-},{"./createInitialBoard":"src/createInitialBoard.ts","./renderBoard":"src/renderBoard.ts","./styles.css":"src/styles.css"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"./createInitialBoard":"src/createInitialBoard.ts","./beginGameLoop":"src/beginGameLoop.ts","./styles.css":"src/styles.css"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -429,7 +642,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "41673" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "40191" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];

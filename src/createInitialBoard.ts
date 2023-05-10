@@ -1,4 +1,4 @@
-import { Animal, Cell, Dirt, Plant, Water } from "./classes";
+import { Zebra, Lion, Cell, Dirt, Plant, Water } from "./classes";
 
 interface IPopulateBoardParams {
   boardState: Cell[][];
@@ -7,22 +7,47 @@ interface IPopulateBoardParams {
   elementType: "tree" | "grass" | "water" | "lion" | "zebra";
 }
 
-function populateBoard({ boardState, boardSize }: IPopulateBoardParams) {
+function populateBoard({
+  boardState,
+  boardSize,
+  elementCount,
+  elementType,
+}: IPopulateBoardParams) {
+  console.log("Populating board with " + elementCount + " " + elementType);
   for (
     let elementsCreated = 0;
     elementsCreated < elementCount;
     elementsCreated++
   ) {
-    const randomCellX = chance.integer({ min: 0, max: boardSize });
-    const randomCellY = chance.integer({ min: 0, max: boardSize });
-    if (boardState[randomCellX][randomCellY].contents.length === 1) {
-      boardState[randomCellX][randomCellY].contents.push(new Animal("lion"));
+    const randomCellX = chance.integer({ min: 0, max: boardSize - 1 });
+    const randomCellY = chance.integer({ min: 0, max: boardSize - 1 });
+    const randomCellContents = boardState[randomCellX][randomCellY].contents;
+    const cellContainsOnlyDirt = randomCellContents.length === 1;
+
+    if (cellContainsOnlyDirt) {
+      switch (elementType) {
+        case "lion":
+          randomCellContents.push(new Lion());
+          break;
+        case "zebra":
+          randomCellContents.push(new Zebra());
+          break;
+        case "tree":
+          randomCellContents.push(new Plant("tree"));
+          break;
+        case "grass":
+          randomCellContents.push(new Plant("grass"));
+          break;
+        case "water":
+          // first remove the dirt to replace it with water
+          randomCellContents.pop();
+          randomCellContents.push(new Water());
+      }
     }
   }
 }
 
 interface ICreateInitialBoardParams {
-  board: HTMLElement;
   boardSize?: number;
   lionCount?: number;
   zebraCount?: number;
@@ -30,9 +55,8 @@ interface ICreateInitialBoardParams {
   resourceDensity?: "low" | "medium" | "high";
 }
 
-// Initialize the board with empty cells
+// Initialize the board with dirt, then populate it with plants, animals and water
 export function createInitialBoard({
-  board,
   boardSize = 20,
   resourceDensity = "low",
   treeCount = 1,
@@ -62,17 +86,29 @@ export function createInitialBoard({
     }
     boardState.push(newRow);
   }
-  // Now that every cell contains dirt, randomly insert plants and animals
-  
+  // Now that every cell contains dirt, randomly insert plants, animals and water
+  const grassAndWaterCount =
+    resourceDensity === "high"
+      ? Math.round(boardSize / 2)
+      : resourceDensity === "medium"
+      ? Math.round(boardSize / 4)
+      : Math.round(boardSize / 6);
+  const elementsToCreate = [
+    { type: "tree" as const, count: treeCount },
+    { type: "zebra" as const, count: zebraCount },
+    { type: "lion" as const, count: lionCount },
+    { type: "grass" as const, count: grassAndWaterCount },
+    { type: "water" as const, count: grassAndWaterCount },
+  ];
 
-  // TODO make this a generic function usable for any type
-  for (let lionsCreated = 0; lionsCreated < lionCount; lionsCreated++) {
-    const randomCellX = chance.integer({ min: 0, max: boardSize });
-    const randomCellY = chance.integer({ min: 0, max: boardSize });
-    if (boardState[randomCellX][randomCellY].contents.length === 1) {
-      boardState[randomCellX][randomCellY].contents.push(new Animal("lion"));
-    }
-  }
+  elementsToCreate.forEach((element) => {
+    populateBoard({
+      boardState,
+      boardSize,
+      elementType: element.type,
+      elementCount: element.count,
+    });
+  });
 
   return boardState;
 }
