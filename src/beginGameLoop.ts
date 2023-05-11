@@ -1,26 +1,6 @@
 import { Cell, Animal, Plant, Water, Dirt } from "./classes";
+import { findNearestCell } from "./util/findNearestCell";
 import { renderBoard } from "./renderBoard";
-
-// function created by chatgpt and updated with a criteria function
-function findNearestCell(x, y, array, criteria) {
-  let minDistance = Number.MAX_VALUE;
-  let nearestElement = null;
-
-  for (let i = 0; i < array.length; i++) {
-    for (let j = 0; j < array[i].length; j++) {
-      if (array[i][j] && criteria(array[i][j])) {
-        // only check for elements matching criteria such as "call contains water"
-        const distance = Math.sqrt((i - x) ** 2 + (j - y) ** 2); // calculate Euclidean distance
-        if (distance < minDistance) {
-          minDistance = distance;
-          nearestElement = array[i][j];
-        }
-      }
-    }
-  }
-
-  return nearestElement;
-}
 
 interface IBeginGameLoopParams {
   initialBoardState: Cell[][];
@@ -31,112 +11,84 @@ export function beginGameLoop({
   initialBoardState,
   board,
 }: IBeginGameLoopParams) {
+  // INITIALIZE BOARD AND RENDER FIRST ITERATION
   const boardState = initialBoardState;
   renderBoard({ boardState, board });
-  // -----------------------------------------------------
+
   const gameLoop = setInterval(() => {
     console.log("ROUND BEGINNING");
 
-    boardState.forEach((row) => {
-      row.forEach((cell) => {
+    for (const row of boardState) {
+      for (const cell of row) {
+        // Really means contains something other than dirt, since dirt will always be the first item in contents[]
         const cellContainsSomething = cell.contents.length > 1;
 
         if (cellContainsSomething) {
-          cell.contents.forEach((element) => {
+          for (const element of cell.contents) {
+            // Process animal desires and interactions
             if (element instanceof Animal) {
-              console.log("Calculating " + element.type + " Desires");
-              // increase hunger, thirst and reproductive urge
               element.increaseDesires();
-              // get animals greatest desire to determine what they should move towards
               const desire = element.getGreatestDesire();
-              console.log(element.type + "'s greatest desire: " + desire);
+              console.log(`${element.type}'s greatest desire: ${desire}`);
+
               switch (desire) {
                 case "looking for water":
-                  const nearestDesire = findNearestCell(
+                  const nearestWater = findNearestCell(
                     cell.x,
                     cell.y,
                     boardState,
-                    (cell) => {
-                      return cell.contents.some(
-                        (element) => element instanceof Water
-                      );
-                    }
+                    (c) => c.contents.some((e) => e instanceof Water)
                   );
-                  // Check if animal is already next to their greatest desire
-                  if (
-                    (Math.abs(nearestDesire.x - cell.x) === 1 ||
-                      nearestDesire.x === cell.x) &&
-                    (Math.abs(nearestDesire.y - cell.y) === 1 ||
-                      nearestDesire.y === cell.y)
-                  ) {
+
+                  const alreadyNextToWater =
+                    nearestWater &&
+                    (Math.abs(nearestWater.x - cell.x) === 1 ||
+                      nearestWater.x === cell.x) &&
+                    (Math.abs(nearestWater.y - cell.y) === 1 ||
+                      nearestWater.y === cell.y);
+
+                  if (alreadyNextToWater) {
                     break;
                   }
 
-                  let newXValue =
-                    cell.x > nearestDesire.x
-                      ? cell.x - 1
-                      : cell.x < nearestDesire.x
-                      ? cell.x + 1
-                      : cell.x;
-                  let newYValue =
-                    cell.y > nearestDesire.y
-                      ? cell.y - 1
-                      : cell.y < nearestDesire.y
-                      ? cell.y + 1
-                      : cell.y;
-
-                  let availableCell = null;
-                  // Look for a non-obstacle cell that is adjacent to the current position of the moving animal
-                  const adjacentCells = [
-                    [cell.x - 1, cell.y],
-                    [cell.x + 1, cell.y],
-                    [cell.x, cell.y - 1],
-                    [cell.x, cell.y + 1],
-                    [cell.x + 1, cell.y + 1],
-                    [cell.x - 1, cell.y - 1],
-                    [cell.x + 1, cell.y - 1],
-                    [cell.x - 1, cell.y + 1],
+                  const [newXValue, newYValue] = [
+                    cell.x + Math.sign(nearestWater!.x - cell.x),
+                    cell.y + Math.sign(nearestWater!.y - cell.y),
                   ];
-                  for (const [x, y] of adjacentCells) {
-                    if (
+
+                  const optimalPath = [
+                    [newXValue, newYValue],
+                    [newXValue, cell.y],
+                    [cell.x, newYValue],
+                  ].filter(([x, y]) => {
+                    return (
                       x >= 0 &&
                       x < boardState.length &&
                       y >= 0 &&
                       y < boardState[0].length &&
-                      !boardState[x][y].contents.some(
-                        (element) => element.isObstacle
-                      )
-                    ) {
-                      availableCell = boardState[x][y];
-                      break;
-                    }
-                  }
-                  // If no obstacle, move along the optimal path towards nearestDesire
-                  if (
-                    !boardState[newXValue][newYValue].contents.some(
-                      (element) => element.isObstacle
-                    )
-                  ) {
-                    const movingAnimal =
-                      boardState[cell.x][cell.y].contents.pop();
-                    boardState[newXValue][newYValue].contents.push(
-                      movingAnimal!
+                      !boardState[x][y].contents.some((e) => e.isObstacle)
                     );
-                    // if obstacle, choose the first available cell with no obstacle
-                  } else if (availableCell) {
-                    const movingAnimal =
-                      boardState[cell.x][cell.y].contents.pop();
-                    availableCell.contents.push(movingAnimal!);
-                  } else {
-                    // if no open spaces and no optimal path available, don't do anything.
+                  });
+
+                  const [moveToX, moveToY] =
+                    optimalPath.length > 0 ? optimalPath[0] : [cell.x, cell.y];
+
+                  const targetCell = boardState[moveToX][moveToY];
+
+                  if (
+                    !targetCell.contents.some((e) => e.isObstacle) &&
+                    !targetCell.contents.some((e) => e instanceof Animal)
+                  ) {
+                    const movingAnimal = cell.contents.pop();
+                    targetCell.contents.push(movingAnimal!);
                   }
                   break;
               }
             }
-          });
+          }
         }
-      });
-    });
+      }
+    }
     // Now that we have updated the board state we need to re-render it!
     renderBoard({ boardState, board });
   }, 3000);
