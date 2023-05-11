@@ -1,22 +1,28 @@
 import { Cell, Animal, Plant, Water, Dirt } from "./classes";
 import { findNearestCell } from "./util/findNearestCell";
 import { renderBoard } from "./renderBoard";
+import { cloneDeep } from "lodash";
 
 interface IBeginGameLoopParams {
   initialBoardState: Cell[][];
   board: HTMLDivElement;
 }
 
+let boardState: Cell[][];
+let updatedBoardState: Cell[][];
+
 export function beginGameLoop({
   initialBoardState,
   board,
 }: IBeginGameLoopParams) {
   // INITIALIZE BOARD AND RENDER FIRST ITERATION
-  const boardState = initialBoardState;
+  boardState = initialBoardState;
   renderBoard({ boardState, board });
 
   const gameLoop = setInterval(() => {
     console.log("ROUND BEGINNING");
+    // Create copy of board state to perform all updates on during iteration so we don't mutate the original while looping
+    updatedBoardState = cloneDeep(boardState);
 
     for (const row of boardState) {
       for (const cell of row) {
@@ -73,13 +79,14 @@ export function beginGameLoop({
                   const [moveToX, moveToY] =
                     optimalPath.length > 0 ? optimalPath[0] : [cell.x, cell.y];
 
-                  const targetCell = boardState[moveToX][moveToY];
+                  const targetCell = updatedBoardState[moveToX][moveToY];
 
                   if (
                     !targetCell.contents.some((e) => e.isObstacle) &&
                     !targetCell.contents.some((e) => e instanceof Animal)
                   ) {
-                    const movingAnimal = cell.contents.pop();
+                    const movingAnimal =
+                      updatedBoardState[cell.x][cell.y].contents.pop();
                     targetCell.contents.push(movingAnimal!);
                   }
                   break;
@@ -89,6 +96,7 @@ export function beginGameLoop({
         }
       }
     }
+    boardState = updatedBoardState;
     // Now that we have updated the board state we need to re-render it!
     renderBoard({ boardState, board });
   }, 3000);
