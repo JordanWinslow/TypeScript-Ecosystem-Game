@@ -1,4 +1,5 @@
 import { Zebra, Lion, Cell, Dirt, Plant, Water } from "./classes";
+import chance from "chance";
 
 interface IPopulateBoardParams {
   boardState: Cell[][];
@@ -19,8 +20,8 @@ function populateBoard({
     elementsCreated < elementCount;
     elementsCreated++
   ) {
-    const randomCellX = chance.integer({ min: 0, max: boardSize - 1 });
-    const randomCellY = chance.integer({ min: 0, max: boardSize - 1 });
+    const randomCellX = chance().integer({ min: 0, max: boardSize - 1 });
+    const randomCellY = chance().integer({ min: 0, max: boardSize - 1 });
     const randomCellContents = boardState[randomCellX][randomCellY].contents;
     const cellContainsOnlyDirt = randomCellContents.length === 1;
 
