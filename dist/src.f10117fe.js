@@ -373,7 +373,35 @@ function createInitialBoard(_a) {
   return boardState;
 }
 exports.createInitialBoard = createInitialBoard;
-},{"./classes":"src/classes.ts"}],"src/renderBoard.ts":[function(require,module,exports) {
+},{"./classes":"src/classes.ts"}],"src/util/findNearestCell.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.findNearestCell = void 0;
+// function created by chatgpt and updated with a criteria function and types
+function findNearestCell(x, y, array, criteria) {
+  var minDistance = Number.MAX_VALUE;
+  var nearestCell = null;
+  for (var i = 0; i < array.length; i++) {
+    for (var j = 0; j < array[i].length; j++) {
+      var cell = array[i][j];
+      // ensure cell meets criteria before calculating distance (ex: cell contains water)
+      if (cell && criteria(cell)) {
+        // calculate Euclidean distance
+        var distance = Math.sqrt(Math.pow(i - x, 2) + Math.pow(j - y, 2));
+        if (distance < minDistance) {
+          minDistance = distance;
+          nearestCell = cell;
+        }
+      }
+    }
+  }
+  return nearestCell;
+}
+exports.findNearestCell = findNearestCell;
+},{}],"src/renderBoard.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -433,95 +461,73 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.beginGameLoop = void 0;
 var classes_1 = require("./classes");
+var findNearestCell_1 = require("./util/findNearestCell");
 var renderBoard_1 = require("./renderBoard");
-// function created by chatgpt and updated with a criteria function
-function findNearestCell(x, y, array, criteria) {
-  var minDistance = Number.MAX_VALUE;
-  var nearestElement = null;
-  for (var i = 0; i < array.length; i++) {
-    for (var j = 0; j < array[i].length; j++) {
-      if (array[i][j] && criteria(array[i][j])) {
-        // only check for elements matching criteria such as "call contains water"
-        var distance = Math.sqrt(Math.pow(i - x, 2) + Math.pow(j - y, 2)); // calculate Euclidean distance
-        if (distance < minDistance) {
-          minDistance = distance;
-          nearestElement = array[i][j];
-        }
-      }
-    }
-  }
-  return nearestElement;
-}
 function beginGameLoop(_a) {
   var initialBoardState = _a.initialBoardState,
     board = _a.board;
+  // INITIALIZE BOARD AND RENDER FIRST ITERATION
   var boardState = initialBoardState;
   (0, renderBoard_1.renderBoard)({
     boardState: boardState,
     board: board
   });
-  // -----------------------------------------------------
   var gameLoop = setInterval(function () {
     console.log("ROUND BEGINNING");
-    boardState.forEach(function (row) {
-      row.forEach(function (cell) {
+    for (var _i = 0, boardState_1 = boardState; _i < boardState_1.length; _i++) {
+      var row = boardState_1[_i];
+      for (var _a = 0, row_1 = row; _a < row_1.length; _a++) {
+        var cell = row_1[_a];
+        // Really means contains something other than dirt, since dirt will always be the first item in contents[]
         var cellContainsSomething = cell.contents.length > 1;
         if (cellContainsSomething) {
-          cell.contents.forEach(function (element) {
+          for (var _b = 0, _c = cell.contents; _b < _c.length; _b++) {
+            var element = _c[_b];
+            // Process animal desires and interactions
             if (element instanceof classes_1.Animal) {
-              console.log("Calculating " + element.type + " Desires");
-              // increase hunger, thirst and reproductive urge
               element.increaseDesires();
-              // get animals greatest desire to determine what they should move towards
               var desire = element.getGreatestDesire();
               console.log(element.type + "'s greatest desire: " + desire);
               switch (desire) {
                 case "looking for water":
-                  var nearestDesire = findNearestCell(cell.x, cell.y, boardState, function (cell) {
-                    return cell.contents.some(function (element) {
-                      return element instanceof classes_1.Water;
+                  var nearestWater = (0, findNearestCell_1.findNearestCell)(cell.x, cell.y, boardState, function (c) {
+                    return c.contents.some(function (e) {
+                      return e instanceof classes_1.Water;
                     });
                   });
-                  // Check if animal is already next to their greatest desire
-                  if ((Math.abs(nearestDesire.x - cell.x) === 1 || nearestDesire.x === cell.x) && (Math.abs(nearestDesire.y - cell.y) === 1 || nearestDesire.y === cell.y)) {
+                  var alreadyNextToWater = nearestWater && (Math.abs(nearestWater.x - cell.x) === 1 || nearestWater.x === cell.x) && (Math.abs(nearestWater.y - cell.y) === 1 || nearestWater.y === cell.y);
+                  if (alreadyNextToWater) {
                     break;
                   }
-                  var newXValue = cell.x > nearestDesire.x ? cell.x - 1 : cell.x < nearestDesire.x ? cell.x + 1 : cell.x;
-                  var newYValue = cell.y > nearestDesire.y ? cell.y - 1 : cell.y < nearestDesire.y ? cell.y + 1 : cell.y;
-                  var availableCell = null;
-                  // Look for a non-obstacle cell that is adjacent to the current position of the moving animal
-                  var adjacentCells = [[cell.x - 1, cell.y], [cell.x + 1, cell.y], [cell.x, cell.y - 1], [cell.x, cell.y + 1], [cell.x + 1, cell.y + 1], [cell.x - 1, cell.y - 1], [cell.x + 1, cell.y - 1], [cell.x - 1, cell.y + 1]];
-                  for (var _i = 0, adjacentCells_1 = adjacentCells; _i < adjacentCells_1.length; _i++) {
-                    var _a = adjacentCells_1[_i],
-                      x = _a[0],
+                  var _d = [cell.x + Math.sign(nearestWater.x - cell.x), cell.y + Math.sign(nearestWater.y - cell.y)],
+                    newXValue = _d[0],
+                    newYValue = _d[1];
+                  var optimalPath = [[newXValue, newYValue], [newXValue, cell.y], [cell.x, newYValue]].filter(function (_a) {
+                    var x = _a[0],
                       y = _a[1];
-                    if (x >= 0 && x < boardState.length && y >= 0 && y < boardState[0].length && !boardState[x][y].contents.some(function (element) {
-                      return element.isObstacle;
-                    })) {
-                      availableCell = boardState[x][y];
-                      break;
-                    }
-                  }
-                  // If no obstacle, move along the optimal path towards nearestDesire
-                  if (!boardState[newXValue][newYValue].contents.some(function (element) {
-                    return element.isObstacle;
+                    return x >= 0 && x < boardState.length && y >= 0 && y < boardState[0].length && !boardState[x][y].contents.some(function (e) {
+                      return e.isObstacle;
+                    });
+                  });
+                  var _e = optimalPath.length > 0 ? optimalPath[0] : [cell.x, cell.y],
+                    moveToX = _e[0],
+                    moveToY = _e[1];
+                  var targetCell = boardState[moveToX][moveToY];
+                  if (!targetCell.contents.some(function (e) {
+                    return e.isObstacle;
+                  }) && !targetCell.contents.some(function (e) {
+                    return e instanceof classes_1.Animal;
                   })) {
-                    var movingAnimal = boardState[cell.x][cell.y].contents.pop();
-                    boardState[newXValue][newYValue].contents.push(movingAnimal);
-                    // if obstacle, choose the first available cell with no obstacle
-                  } else if (availableCell) {
-                    var movingAnimal = boardState[cell.x][cell.y].contents.pop();
-                    availableCell.contents.push(movingAnimal);
-                  } else {
-                    // if no open spaces and no optimal path available, don't do anything.
+                    var movingAnimal = cell.contents.pop();
+                    targetCell.contents.push(movingAnimal);
                   }
                   break;
               }
             }
-          });
+          }
         }
-      });
-    });
+      }
+    }
     // Now that we have updated the board state we need to re-render it!
     (0, renderBoard_1.renderBoard)({
       boardState: boardState,
@@ -536,7 +542,7 @@ function beginGameLoop(_a) {
   });
 }
 exports.beginGameLoop = beginGameLoop;
-},{"./classes":"src/classes.ts","./renderBoard":"src/renderBoard.ts"}],"node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
+},{"./classes":"src/classes.ts","./util/findNearestCell":"src/util/findNearestCell.ts","./renderBoard":"src/renderBoard.ts"}],"node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
 var bundleURL = null;
 function getBundleURLCached() {
   if (!bundleURL) {
