@@ -21,6 +21,10 @@ export class Cell {
       [this.x + 1, this.y],
       [this.x, this.y - 1],
       [this.x, this.y + 1],
+      [this.x - 1, this.y - 1],
+      [this.x + 1, this.y + 1],
+      [this.x + 1, this.y - 1],
+      [this.x - 1, this.y + 1],
     ];
   }
 }
@@ -35,12 +39,14 @@ export class Animal {
   speed: number;
   // health is a number between 0 - 10 if 0 animal dies
   health: number;
-  // All animals are obstacles
-  isObstacle: true;
+  // All animals are obstacles unless deceased
+  isObstacle: boolean;
   // If false, animal is alive
   deceased: boolean;
+  icon: string;
 
-  constructor() {
+  constructor(icon: string) {
+    this.icon = icon;
     this.speed = 1;
     this.age = "adult";
     this.health = 10;
@@ -74,37 +80,78 @@ export class Animal {
   }
 
   increaseDesires() {
-    this.hungerLevel++;
-    this.thirstLevel++;
-    this.reproductiveUrge++;
+    if (this.hungerLevel !== 10) {
+      this.hungerLevel++;
+    }
+    if (this.thirstLevel !== 10) {
+      this.thirstLevel++;
+    }
+    if (this.reproductiveUrge !== 10) {
+      this.reproductiveUrge++;
+    }
   }
 
   eat() {
     // could update this method to take in a food source with varying nutritionalValue
-    if (this.health < 10) {
-      this.health++;
-    }
+    this.gainHealth(5);
     if (this.hungerLevel > 0) {
-      this.hungerLevel = this.hungerLevel - 3;
+      if (this.hungerLevel <= 5) {
+        this.hungerLevel = 0;
+      } else {
+        this.hungerLevel = this.hungerLevel - 5;
+      }
+    }
+  }
+
+  drink() {
+    this.gainHealth(5);
+    if (this.thirstLevel > 0) {
+      if (this.thirstLevel <= 5) {
+        this.thirstLevel = 0;
+      } else {
+        this.thirstLevel = this.thirstLevel - 5;
+      }
     }
   }
 
   loseHealth(healthToLose: number) {
     this.health = this.health - healthToLose;
     if (this.health <= 0) {
-      this.deceased = true;
+      this.setDeceased();
     }
+  }
+
+  gainHealth(healthToGain: number) {
+    if (this.health + healthToGain > 10) {
+      this.health = 10;
+    } else {
+      this.health = this.health + healthToGain;
+    }
+  }
+
+  setDeceased() {
+    console.log("ANIMAL DIED!");
+
+    this.deceased = true;
+    this.icon = "🪦";
+    this.isObstacle = false;
   }
 }
 
 export class Lion extends Animal {
   type = "lion";
-  icon = "🦁";
+
+  constructor() {
+    super("🦁");
+  }
 }
 
 export class Zebra extends Animal {
   type = "zebra";
-  icon = "🦓";
+
+  constructor() {
+    super("🦓");
+  }
 }
 
 export class Plant {
