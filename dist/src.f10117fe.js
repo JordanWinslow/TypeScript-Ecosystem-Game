@@ -160,13 +160,14 @@ var Cell = /** @class */function () {
     this.contents = contents;
   };
   Cell.prototype.getNearestCellIndexes = function () {
-    return [[this.x - 1, this.y], [this.x + 1, this.y], [this.x, this.y - 1], [this.x, this.y + 1]];
+    return [[this.x - 1, this.y], [this.x + 1, this.y], [this.x, this.y - 1], [this.x, this.y + 1], [this.x - 1, this.y - 1], [this.x + 1, this.y + 1], [this.x + 1, this.y - 1], [this.x - 1, this.y + 1]];
   };
   return Cell;
 }();
 exports.Cell = Cell;
 var Animal = /** @class */function () {
-  function Animal() {
+  function Animal(icon) {
+    this.icon = icon;
     this.speed = 1;
     this.age = "adult";
     this.health = 10;
@@ -189,24 +190,55 @@ var Animal = /** @class */function () {
     }
   };
   Animal.prototype.increaseDesires = function () {
-    this.hungerLevel++;
-    this.thirstLevel++;
-    this.reproductiveUrge++;
+    if (this.hungerLevel !== 10) {
+      this.hungerLevel++;
+    }
+    if (this.thirstLevel !== 10) {
+      this.thirstLevel++;
+    }
+    if (this.reproductiveUrge !== 10) {
+      this.reproductiveUrge++;
+    }
   };
   Animal.prototype.eat = function () {
     // could update this method to take in a food source with varying nutritionalValue
-    if (this.health < 10) {
-      this.health++;
-    }
+    this.gainHealth(5);
     if (this.hungerLevel > 0) {
-      this.hungerLevel = this.hungerLevel - 3;
+      if (this.hungerLevel <= 5) {
+        this.hungerLevel = 0;
+      } else {
+        this.hungerLevel = this.hungerLevel - 5;
+      }
+    }
+  };
+  Animal.prototype.drink = function () {
+    this.gainHealth(5);
+    if (this.thirstLevel > 0) {
+      if (this.thirstLevel <= 5) {
+        this.thirstLevel = 0;
+      } else {
+        this.thirstLevel = this.thirstLevel - 5;
+      }
     }
   };
   Animal.prototype.loseHealth = function (healthToLose) {
     this.health = this.health - healthToLose;
     if (this.health <= 0) {
-      this.deceased = true;
+      this.setDeceased();
     }
+  };
+  Animal.prototype.gainHealth = function (healthToGain) {
+    if (this.health + healthToGain > 10) {
+      this.health = 10;
+    } else {
+      this.health = this.health + healthToGain;
+    }
+  };
+  Animal.prototype.setDeceased = function () {
+    console.log("ANIMAL DIED!");
+    this.deceased = true;
+    this.icon = "🪦";
+    this.isObstacle = false;
   };
   return Animal;
 }();
@@ -214,9 +246,8 @@ exports.Animal = Animal;
 var Lion = /** @class */function (_super) {
   __extends(Lion, _super);
   function Lion() {
-    var _this = _super !== null && _super.apply(this, arguments) || this;
+    var _this = _super.call(this, "🦁") || this;
     _this.type = "lion";
-    _this.icon = "🦁";
     return _this;
   }
   return Lion;
@@ -225,9 +256,8 @@ exports.Lion = Lion;
 var Zebra = /** @class */function (_super) {
   __extends(Zebra, _super);
   function Zebra() {
-    var _this = _super !== null && _super.apply(this, arguments) || this;
+    var _this = _super.call(this, "🦓") || this;
     _this.type = "zebra";
-    _this.icon = "🦓";
     return _this;
   }
   return Zebra;
@@ -10441,10 +10471,10 @@ function renderBoard(_a) {
             gridCell.classList.add("water");
             break;
           case "lion":
-            gridCell.innerHTML = "🦁";
+            gridCell.innerHTML = content.icon;
             break;
           case "zebra":
-            gridCell.innerHTML = "🦓";
+            gridCell.innerHTML = content.icon;
             break;
           // Dirt is the default
           default:
@@ -27540,16 +27570,183 @@ var define;
 },{"buffer":"node_modules/buffer/index.js"}],"src/beginGameLoop.ts":[function(require,module,exports) {
 "use strict";
 
+var __importDefault = this && this.__importDefault || function (mod) {
+  return mod && mod.__esModule ? mod : {
+    "default": mod
+  };
+};
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.beginGameLoop = void 0;
+exports.beginGameLoop = exports.moveAnimalTowardDesire = void 0;
 var classes_1 = require("./classes");
 var findNearestCell_1 = require("./util/findNearestCell");
 var renderBoard_1 = require("./renderBoard");
 var lodash_1 = require("lodash");
+var chance_1 = __importDefault(require("chance"));
+function moveAnimalTowardDesire(_a) {
+  var animalCell = _a.animalCell,
+    boardState = _a.boardState,
+    updatedBoardState = _a.updatedBoardState,
+    getDesireByClassInstance = _a.getDesireByClassInstance;
+  var nearestDesire = (0, findNearestCell_1.findNearestCell)(animalCell.x, animalCell.y, boardState, function (c) {
+    return c.contents.some(getDesireByClassInstance);
+  });
+  var alreadyNextToDesire = nearestDesire && (Math.abs(nearestDesire.x - animalCell.x) === 1 || nearestDesire.x === animalCell.x) && (Math.abs(nearestDesire.y - animalCell.y) === 1 || nearestDesire.y === animalCell.y);
+  if (alreadyNextToDesire) {
+    return;
+  }
+  var _b = [animalCell.x + Math.sign(nearestDesire.x - animalCell.x), animalCell.y + Math.sign(nearestDesire.y - animalCell.y)],
+    newXValue = _b[0],
+    newYValue = _b[1];
+  var adjacentCells = animalCell.getNearestCellIndexes().filter(function (_a) {
+    var x = _a[0],
+      y = _a[1];
+    return x >= 0 && x < boardState.length && y >= 0 && y < boardState[0].length && !boardState[x][y].contents.some(function (e) {
+      return e.isObstacle;
+    });
+  });
+  var optimalPath = [[newXValue, newYValue], [newXValue, animalCell.y], [animalCell.x, newYValue]].filter(function (_a) {
+    var x = _a[0],
+      y = _a[1];
+    return x >= 0 && x < boardState.length && y >= 0 && y < boardState[0].length && boardState[x][y].contents.some(function (e) {
+      return e.isObstacle;
+    });
+  });
+  var _c = optimalPath.length > 0 ? optimalPath[0] : adjacentCells.length > 0 ? (0, chance_1.default)().pickone(adjacentCells) : [animalCell.x, animalCell.y],
+    moveToX = _c[0],
+    moveToY = _c[1];
+  var targetCell = updatedBoardState[moveToX][moveToY];
+  if (!targetCell.contents.some(function (e) {
+    return e.isObstacle;
+  })) {
+    var movingAnimal = updatedBoardState[animalCell.x][animalCell.y].contents.pop();
+    targetCell.contents.push(movingAnimal);
+  }
+}
+exports.moveAnimalTowardDesire = moveAnimalTowardDesire;
 var boardState;
 var updatedBoardState;
+function gameLoop(board) {
+  console.log("ROUND BEGINNING");
+  // Create copy of board state to perform all updates on during iteration so we don't mutate the original while looping.
+  // We need a robust function for this since it involves copying a class instance inside of a 2 dimensional array.
+  // We could also accomplish this with far less memory needed if we add properties like "hasMoved" or "hasActivated"
+  // To the animal class, but this will make the code more complicated so as long as it performs well, this should suffice.
+  updatedBoardState = (0, lodash_1.cloneDeep)(boardState);
+  console.log("UPDATED BOARD STATE: ", updatedBoardState);
+  for (var _i = 0, boardState_1 = boardState; _i < boardState_1.length; _i++) {
+    var row = boardState_1[_i];
+    for (var _a = 0, row_1 = row; _a < row_1.length; _a++) {
+      var cell = row_1[_a];
+      // Really means contains something other than dirt, since dirt will always be the first item in contents[]
+      var cellContainsSomething = cell.contents.length > 1;
+      if (cellContainsSomething) {
+        for (var _b = 0, _c = updatedBoardState[cell.x][cell.y].contents; _b < _c.length; _b++) {
+          var element = _c[_b];
+          // Process animal desires and interactions
+          if (element instanceof classes_1.Animal) {
+            if (element.deceased === true) {
+              break;
+            }
+            element.increaseDesires();
+            var desire = element.getGreatestDesire();
+            console.log(element.type + "'s current desire: " + desire);
+            switch (desire) {
+              case "looking for food":
+                var nearestDesire = (0, findNearestCell_1.findNearestCell)(cell.x, cell.y, boardState, function (c) {
+                  return c.contents.some(function (e) {
+                    return e.type === "grass";
+                  });
+                });
+                var alreadyNextToDesire = nearestDesire && (Math.abs(nearestDesire.x - cell.x) === 1 || nearestDesire.x === cell.x) && (Math.abs(nearestDesire.y - cell.y) === 1 || nearestDesire.y === cell.y);
+                if (alreadyNextToDesire) {
+                  element.eat();
+                  break;
+                }
+                var _d = [cell.x + Math.sign(nearestDesire.x - cell.x), cell.y + Math.sign(nearestDesire.y - cell.y)],
+                  newXValue = _d[0],
+                  newYValue = _d[1];
+                var optimalPath = [[newXValue, newYValue], [newXValue, cell.y], [cell.x, newYValue]].filter(function (_a) {
+                  var x = _a[0],
+                    y = _a[1];
+                  return x >= 0 && x < boardState.length && y >= 0 && y < boardState[0].length && !boardState[x][y].contents.some(function (e) {
+                    return e.isObstacle;
+                  });
+                });
+                var _e = optimalPath.length > 0 ? optimalPath[0] : [cell.x, cell.y],
+                  moveToX = _e[0],
+                  moveToY = _e[1];
+                var targetCell = updatedBoardState[moveToX][moveToY];
+                if (!targetCell.contents.some(function (e) {
+                  return e.isObstacle;
+                }) && !targetCell.contents.some(function (e) {
+                  return e instanceof classes_1.Animal;
+                })) {
+                  var movingAnimal = updatedBoardState[cell.x][cell.y].contents.pop();
+                  targetCell.contents.push(movingAnimal);
+                }
+                break;
+              case "looking for water":
+                var nearestDesire = (0, findNearestCell_1.findNearestCell)(cell.x, cell.y, boardState, function (c) {
+                  return c.contents.some(function (e) {
+                    return e instanceof classes_1.Water;
+                  });
+                });
+                var alreadyNextToDesire = nearestDesire && (Math.abs(nearestDesire.x - cell.x) === 1 || nearestDesire.x === cell.x) && (Math.abs(nearestDesire.y - cell.y) === 1 || nearestDesire.y === cell.y);
+                if (alreadyNextToDesire) {
+                  element.drink();
+                  break;
+                }
+                var _f = [cell.x + Math.sign(nearestDesire.x - cell.x), cell.y + Math.sign(nearestDesire.y - cell.y)],
+                  newXValue = _f[0],
+                  newYValue = _f[1];
+                var optimalPath = [[newXValue, newYValue], [newXValue, cell.y], [cell.x, newYValue]].filter(function (_a) {
+                  var x = _a[0],
+                    y = _a[1];
+                  return x >= 0 && x < boardState.length && y >= 0 && y < boardState[0].length && !boardState[x][y].contents.some(function (e) {
+                    return e.isObstacle;
+                  });
+                });
+                var _g = optimalPath.length > 0 ? optimalPath[0] : [cell.x, cell.y],
+                  moveToX = _g[0],
+                  moveToY = _g[1];
+                var targetCell = updatedBoardState[moveToX][moveToY];
+                if (!targetCell.contents.some(function (e) {
+                  return e.isObstacle;
+                }) && !targetCell.contents.some(function (e) {
+                  return e instanceof classes_1.Animal;
+                })) {
+                  var movingAnimal = updatedBoardState[cell.x][cell.y].contents.pop();
+                  targetCell.contents.push(movingAnimal);
+                }
+                break;
+              case "looking for mate":
+                moveAnimalTowardDesire({
+                  animalCell: cell,
+                  boardState: boardState,
+                  updatedBoardState: updatedBoardState,
+                  getDesireByClassInstance: function getDesireByClassInstance(e) {
+                    return e instanceof classes_1.Zebra;
+                  }
+                });
+                break;
+            }
+            if (element.hungerLevel === 10 || element.thirstLevel === 10) {
+              element.loseHealth(1);
+            }
+          }
+        }
+      }
+    }
+  }
+  boardState = updatedBoardState;
+  // Now that we have updated the board state we need to re-render it!
+  (0, renderBoard_1.renderBoard)({
+    boardState: boardState,
+    board: board
+  });
+}
 function beginGameLoop(_a) {
   var initialBoardState = _a.initialBoardState,
     board = _a.board;
@@ -27559,80 +27756,18 @@ function beginGameLoop(_a) {
     boardState: boardState,
     board: board
   });
-  var gameLoop = setInterval(function () {
-    console.log("ROUND BEGINNING");
-    // Create copy of board state to perform all updates on during iteration so we don't mutate the original while looping
-    updatedBoardState = (0, lodash_1.cloneDeep)(boardState);
-    for (var _i = 0, boardState_1 = boardState; _i < boardState_1.length; _i++) {
-      var row = boardState_1[_i];
-      for (var _a = 0, row_1 = row; _a < row_1.length; _a++) {
-        var cell = row_1[_a];
-        // Really means contains something other than dirt, since dirt will always be the first item in contents[]
-        var cellContainsSomething = cell.contents.length > 1;
-        if (cellContainsSomething) {
-          for (var _b = 0, _c = cell.contents; _b < _c.length; _b++) {
-            var element = _c[_b];
-            // Process animal desires and interactions
-            if (element instanceof classes_1.Animal) {
-              element.increaseDesires();
-              var desire = element.getGreatestDesire();
-              console.log(element.type + "'s greatest desire: " + desire);
-              switch (desire) {
-                case "looking for water":
-                  var nearestWater = (0, findNearestCell_1.findNearestCell)(cell.x, cell.y, boardState, function (c) {
-                    return c.contents.some(function (e) {
-                      return e instanceof classes_1.Water;
-                    });
-                  });
-                  var alreadyNextToWater = nearestWater && (Math.abs(nearestWater.x - cell.x) === 1 || nearestWater.x === cell.x) && (Math.abs(nearestWater.y - cell.y) === 1 || nearestWater.y === cell.y);
-                  if (alreadyNextToWater) {
-                    break;
-                  }
-                  var _d = [cell.x + Math.sign(nearestWater.x - cell.x), cell.y + Math.sign(nearestWater.y - cell.y)],
-                    newXValue = _d[0],
-                    newYValue = _d[1];
-                  var optimalPath = [[newXValue, newYValue], [newXValue, cell.y], [cell.x, newYValue]].filter(function (_a) {
-                    var x = _a[0],
-                      y = _a[1];
-                    return x >= 0 && x < boardState.length && y >= 0 && y < boardState[0].length && !boardState[x][y].contents.some(function (e) {
-                      return e.isObstacle;
-                    });
-                  });
-                  var _e = optimalPath.length > 0 ? optimalPath[0] : [cell.x, cell.y],
-                    moveToX = _e[0],
-                    moveToY = _e[1];
-                  var targetCell = updatedBoardState[moveToX][moveToY];
-                  if (!targetCell.contents.some(function (e) {
-                    return e.isObstacle;
-                  }) && !targetCell.contents.some(function (e) {
-                    return e instanceof classes_1.Animal;
-                  })) {
-                    var movingAnimal = updatedBoardState[cell.x][cell.y].contents.pop();
-                    targetCell.contents.push(movingAnimal);
-                  }
-                  break;
-              }
-            }
-          }
-        }
-      }
-    }
-    boardState = updatedBoardState;
-    // Now that we have updated the board state we need to re-render it!
-    (0, renderBoard_1.renderBoard)({
-      boardState: boardState,
-      board: board
-    });
+  var gameInterval = setInterval(function () {
+    return gameLoop(board);
   }, 3000);
   // ---------------------- CREATE GAME CONTROLS ----------------------
   window.addEventListener("keyup", function (event) {
     if (event.key === "Escape") {
-      clearInterval(gameLoop);
+      clearInterval(gameInterval);
     }
   });
 }
 exports.beginGameLoop = beginGameLoop;
-},{"./classes":"src/classes.ts","./util/findNearestCell":"src/util/findNearestCell.ts","./renderBoard":"src/renderBoard.ts","lodash":"node_modules/lodash/lodash.js"}],"node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
+},{"./classes":"src/classes.ts","./util/findNearestCell":"src/util/findNearestCell.ts","./renderBoard":"src/renderBoard.ts","lodash":"node_modules/lodash/lodash.js","chance":"node_modules/chance/chance.js"}],"node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
 var bundleURL = null;
 function getBundleURLCached() {
   if (!bundleURL) {
@@ -27738,7 +27873,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "40191" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "34115" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];

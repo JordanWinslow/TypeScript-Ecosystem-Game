@@ -35,10 +35,10 @@ export function renderBoard({ board, boardState }: IRenderBoardParams) {
             gridCell.classList.add("water");
             break;
           case "lion":
-            gridCell.innerHTML = "🦁";
+            gridCell.innerHTML = content.icon;
             break;
           case "zebra":
-            gridCell.innerHTML = "🦓";
+            gridCell.innerHTML = content.icon;
             break;
           // Dirt is the default
           default:
