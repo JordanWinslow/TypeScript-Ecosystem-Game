@@ -1,4 +1,4 @@
-import { Cell } from "../classes";
+import { Cell } from "../types/Cell";
 
 // function created by chatgpt and updated with a criteria function and types
 export function findNearestCell(

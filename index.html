@@ -1,12 +1,46 @@
 <html>
   <head>
-    <title>Parcel Sandbox</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="UTF-8" />
+    <title>TypeScript Ecosystem Sim Game by Jordan Winslow</title>
   </head>
 
   <body>
     <div id="app">
-      <h1>Ecosystem Sim</h1>
+      <h2>Ecosystem Sim</h2>
+      <div id='setupFormContainer'>
+        <h3>Set up initial ecosystem</h3>
+        <p>Determine the starting conditions for your ecosystem, or leave empty and click submit to start with default values</p>
+        
+        <form id='setupForm'>
+        <label for="boardSize">Board Size</label>
+        <select class="form-control" name="boardSize" id="boardSize">
+            <option value="10" selected="true" id="boardSize-0">Small (10 x 10)</option>
+            <option value="20" id="boardSize-1">Medium (20 x 20)</option>
+            <option value="30" id="boardSize-2">Large (30 x 30)</option>
+            <option value="50" id="boardSize-3">Massive (50 x 50)</option>
+            <option value="100" id="boardSize-4">Will Cause Glitches (100 x 100)</option>
+        </select>
+        
+        <label for="resourceDensity">Resource Density<span class="tooltip" data-text="Determines how much food and water will be available on the board.">?</span></label>
+        <select class="form-control" name="resourceDensity" id="resourceDensity">
+            <option value="low" selected="true" id="resourceDensity-0">Low</option>
+            <option value="medium" id="resourceDensity-1">Medium</option>
+            <option value="high" id="resourceDensity-2">High</option>
+        </select>
+        
+        <label for='lionCount'>Number of Lions</label>
+        <input name='lionCount' type='number' />
+        
+        <label for='zebraCount'>Number of Zebras</label>
+        <input name='zebraCount' type='number' />
+        
+        <label for='treeCount'>Number of Trees</label>
+        <input name='treeCount' type='number' />
+        
+        <button id='submit' type='submit'>Begin Simulation</button>
+        </form>
+      </div>
       <div id="board"></div>
     </div>
 

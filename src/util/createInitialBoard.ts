@@ -1,4 +1,8 @@
-import { Zebra, Lion, Cell, Dirt, Plant, Water } from "./classes";
+import { Lion, Zebra } from "../types/Animals";
+import { Grass, Tree } from "../types/Plants";
+import { Water } from "../types/Water";
+import { Dirt } from "../types/Dirt";
+import { Cell } from "../types/Cell";
 import chance from "chance";
 
 interface IPopulateBoardParams {
@@ -34,10 +38,10 @@ function populateBoard({
           randomCellContents.push(new Zebra());
           break;
         case "tree":
-          randomCellContents.push(new Plant("tree"));
+          randomCellContents.push(new Tree());
           break;
         case "grass":
-          randomCellContents.push(new Plant("grass"));
+          randomCellContents.push(new Grass());
           break;
         case "water":
           // first remove the dirt to replace it with water
@@ -59,15 +63,15 @@ interface ICreateInitialBoardParams {
 // Initialize the board with dirt, then populate it with plants, animals and water
 export function createInitialBoard({
   boardSize = 20,
-  resourceDensity = "low",
-  treeCount = 1,
-  zebraCount = 1,
-  lionCount = 1,
+  resourceDensity = "medium",
+  treeCount = 5,
+  zebraCount = 4,
+  lionCount = 2,
 }: ICreateInitialBoardParams) {
   // Throw error if user tries to create too many elements.
   if (treeCount + zebraCount + lionCount > boardSize * boardSize) {
     throw new RangeError(
-      "Number of animals and plants exceeds bopard size! Please increase board size or lower number of animals and plants."
+      "Number of animals and plants exceeds board size! Please increase board size or lower number of animals and plants."
     );
   }
   // Create a 2D array of cells that represents the board

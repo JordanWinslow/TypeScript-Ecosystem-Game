@@ -1,4 +1,8 @@
-import { Cell } from "./classes";
+import { Cell } from "../types/Cell";
+import { Lion, Zebra } from "../types/Animals";
+import { Grass, Tree } from "../types/Plants";
+import { Water } from "../types/Water";
+import { Dirt } from "../types/Dirt";
 
 interface IRenderBoardParams {
   board: HTMLDivElement;
@@ -24,27 +28,20 @@ export function renderBoard({ board, boardState }: IRenderBoardParams) {
       gridCell.classList.add("cell");
 
       cell.contents.forEach((content) => {
-        switch (content.type) {
-          case "grass":
-            gridCell.innerHTML = "🌱";
-            break;
-          case "tree":
-            gridCell.innerHTML = "🌳";
-            break;
-          case "water":
-            gridCell.classList.add("water");
-            break;
-          case "lion":
-            gridCell.innerHTML = content.icon;
-            break;
-          case "zebra":
-            gridCell.innerHTML = content.icon;
-            break;
-          // Dirt is the default
-          default:
-            gridCell.classList.add("dirt");
+        if (content instanceof Lion || content instanceof Zebra) {
+          const tooltipText = content.getTooltipText();
+          gridCell.innerHTML = `<span class="tooltip" data-text="${tooltipText}">${content.icon}</span>`;
+        } else if (content instanceof Grass || content instanceof Tree) {
+          gridCell.innerHTML = content.icon;
+        } else if (content instanceof Water) {
+          // We use CSS to represent water, not an icon
+          gridCell.classList.add("water");
+        } else if (content instanceof Dirt) {
+          // Dirt is the default and it uses CSS instead of an icon
+          gridCell.classList.add("dirt");
         }
       });
+
       gridRow.appendChild(gridCell);
     });
   });
