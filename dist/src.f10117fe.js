@@ -117,182 +117,19 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"src/classes.ts":[function(require,module,exports) {
+})({"src/constants/AnimalDesiresEnum.ts":[function(require,module,exports) {
 "use strict";
 
-var __extends = this && this.__extends || function () {
-  var _extendStatics = function extendStatics(d, b) {
-    _extendStatics = Object.setPrototypeOf || {
-      __proto__: []
-    } instanceof Array && function (d, b) {
-      d.__proto__ = b;
-    } || function (d, b) {
-      for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
-    };
-    return _extendStatics(d, b);
-  };
-  return function (d, b) {
-    if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-    _extendStatics(d, b);
-    function __() {
-      this.constructor = d;
-    }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-}();
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Water = exports.Dirt = exports.Plant = exports.Zebra = exports.Lion = exports.Animal = exports.Cell = void 0;
-var Cell = /** @class */function () {
-  function Cell(_a) {
-    var x = _a.x,
-      y = _a.y,
-      contents = _a.contents;
-    this.contents = contents;
-    this.isObstacle = contents.some(function (content) {
-      return content.isObstacle;
-    });
-    this.x = x;
-    this.y = y;
-  }
-  Cell.prototype.updateContents = function (contents) {
-    this.contents = contents;
-  };
-  Cell.prototype.getNearestCellIndexes = function () {
-    return [[this.x - 1, this.y], [this.x + 1, this.y], [this.x, this.y - 1], [this.x, this.y + 1], [this.x - 1, this.y - 1], [this.x + 1, this.y + 1], [this.x + 1, this.y - 1], [this.x - 1, this.y + 1]];
-  };
-  return Cell;
-}();
-exports.Cell = Cell;
-var Animal = /** @class */function () {
-  function Animal(icon) {
-    this.icon = icon;
-    this.speed = 1;
-    this.age = "adult";
-    this.health = 10;
-    this.thirstLevel = 0;
-    this.hungerLevel = 0;
-    this.reproductiveUrge = 0;
-    this.isObstacle = true;
-    this.deceased = false;
-  }
-  Animal.prototype.getGreatestDesire = function () {
-    var wantsToReproduce = this.reproductiveUrge > this.thirstLevel && this.reproductiveUrge > this.hungerLevel && this.hungerLevel <= 5 && this.thirstLevel <= 5;
-    var wantsToEat = this.hungerLevel !== 0 && this.hungerLevel > this.thirstLevel;
-    var wantsToDrink = this.thirstLevel !== 0 && this.thirstLevel >= this.hungerLevel;
-    if (wantsToReproduce) {
-      return "looking for mate";
-    } else if (wantsToEat) {
-      return "looking for food";
-    } else if (wantsToDrink) {
-      return "looking for water";
-    }
-  };
-  Animal.prototype.increaseDesires = function () {
-    if (this.hungerLevel !== 10) {
-      this.hungerLevel++;
-    }
-    if (this.thirstLevel !== 10) {
-      this.thirstLevel++;
-    }
-    if (this.reproductiveUrge !== 10) {
-      this.reproductiveUrge++;
-    }
-  };
-  Animal.prototype.eat = function () {
-    // could update this method to take in a food source with varying nutritionalValue
-    this.gainHealth(5);
-    if (this.hungerLevel > 0) {
-      if (this.hungerLevel <= 5) {
-        this.hungerLevel = 0;
-      } else {
-        this.hungerLevel = this.hungerLevel - 5;
-      }
-    }
-  };
-  Animal.prototype.drink = function () {
-    this.gainHealth(5);
-    if (this.thirstLevel > 0) {
-      if (this.thirstLevel <= 5) {
-        this.thirstLevel = 0;
-      } else {
-        this.thirstLevel = this.thirstLevel - 5;
-      }
-    }
-  };
-  Animal.prototype.loseHealth = function (healthToLose) {
-    this.health = this.health - healthToLose;
-    if (this.health <= 0) {
-      this.setDeceased();
-    }
-  };
-  Animal.prototype.gainHealth = function (healthToGain) {
-    if (this.health + healthToGain > 10) {
-      this.health = 10;
-    } else {
-      this.health = this.health + healthToGain;
-    }
-  };
-  Animal.prototype.setDeceased = function () {
-    console.log("ANIMAL DIED!");
-    this.deceased = true;
-    this.icon = "🪦";
-    this.isObstacle = false;
-  };
-  return Animal;
-}();
-exports.Animal = Animal;
-var Lion = /** @class */function (_super) {
-  __extends(Lion, _super);
-  function Lion() {
-    var _this = _super.call(this, "🦁") || this;
-    _this.type = "lion";
-    return _this;
-  }
-  return Lion;
-}(Animal);
-exports.Lion = Lion;
-var Zebra = /** @class */function (_super) {
-  __extends(Zebra, _super);
-  function Zebra() {
-    var _this = _super.call(this, "🦓") || this;
-    _this.type = "zebra";
-    return _this;
-  }
-  return Zebra;
-}(Animal);
-exports.Zebra = Zebra;
-var Plant = /** @class */function () {
-  function Plant(type) {
-    this.type = type;
-    this.nutritionalValue = 50;
-    this.isObstacle = type === "tree";
-  }
-  return Plant;
-}();
-exports.Plant = Plant;
-var Dirt = /** @class */function () {
-  function Dirt() {
-    this.type = "dirt";
-    this.isObstacle = false;
-    this.willBecomePlant = false;
-  }
-  Dirt.prototype.turnIntoPlant = function () {
-    this.willBecomePlant = true;
-  };
-  return Dirt;
-}();
-exports.Dirt = Dirt;
-var Water = /** @class */function () {
-  function Water() {
-    this.type = "water";
-    this.amount = Infinity;
-    this.isObstacle = true;
-  }
-  return Water;
-}();
-exports.Water = Water;
+exports.AnimalDesires = void 0;
+var AnimalDesires;
+(function (AnimalDesires) {
+  AnimalDesires["Reproduce"] = "Looking for Mate";
+  AnimalDesires["Food"] = "Looking for Food";
+  AnimalDesires["Water"] = "Looking for Water";
+})(AnimalDesires = exports.AnimalDesires || (exports.AnimalDesires = {}));
 },{}],"node_modules/base64-js/index.js":[function(require,module,exports) {
 'use strict'
 
@@ -10290,7 +10127,281 @@ options,
     }
 })();
 
-},{"buffer":"node_modules/buffer/index.js"}],"src/createInitialBoard.ts":[function(require,module,exports) {
+},{"buffer":"node_modules/buffer/index.js"}],"src/types/Animals.ts":[function(require,module,exports) {
+"use strict";
+
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+    };
+    return _extendStatics(d, b);
+  };
+  return function (d, b) {
+    if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+    _extendStatics(d, b);
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
+var __importDefault = this && this.__importDefault || function (mod) {
+  return mod && mod.__esModule ? mod : {
+    "default": mod
+  };
+};
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Zebra = exports.Lion = exports.Animal = void 0;
+var AnimalDesiresEnum_1 = require("../constants/AnimalDesiresEnum");
+var chance_1 = __importDefault(require("chance"));
+var Animal = /** @class */function () {
+  // age: "newborn" | "child" | "adult" | "senior";
+  // speed: number;
+  function Animal(type, icon) {
+    this.id = (0, chance_1.default)().name();
+    this.type = type;
+    this.icon = icon;
+    this.health = 10;
+    this.thirstLevel = 0;
+    this.hungerLevel = 0;
+    this.reproductiveUrge = 0;
+    this.isObstacle = true;
+    this.deceased = false;
+    // this.speed = 1;
+    // this.age = "adult";
+  }
+
+  Animal.prototype.getGreatestDesire = function () {
+    var wantsToReproduce = this.reproductiveUrge > this.thirstLevel && this.reproductiveUrge > this.hungerLevel && this.hungerLevel <= 5 && this.thirstLevel <= 5;
+    var wantsToEat = this.hungerLevel !== 0 && this.hungerLevel > this.thirstLevel;
+    var wantsToDrink = this.thirstLevel !== 0 && this.thirstLevel >= this.hungerLevel;
+    if (wantsToReproduce) {
+      return AnimalDesiresEnum_1.AnimalDesires.Reproduce;
+    } else if (wantsToEat) {
+      return AnimalDesiresEnum_1.AnimalDesires.Food;
+    } else if (wantsToDrink) {
+      return AnimalDesiresEnum_1.AnimalDesires.Water;
+    } else return "";
+  };
+  Animal.prototype.increaseDesires = function () {
+    if (this.hungerLevel !== 10) {
+      this.hungerLevel++;
+    }
+    if (this.thirstLevel !== 10) {
+      this.thirstLevel++;
+    }
+    if (this.reproductiveUrge !== 10) {
+      this.reproductiveUrge++;
+    }
+  };
+  Animal.prototype.eat = function () {
+    console.log(this.type + " is eating");
+    // could update this method to take in a food source with varying nutritionalValue
+    this.gainHealth(5);
+    if (this.hungerLevel > 0) {
+      if (this.hungerLevel <= 5) {
+        this.hungerLevel = 0;
+      } else {
+        this.hungerLevel = this.hungerLevel - 5;
+      }
+    }
+  };
+  Animal.prototype.drink = function () {
+    console.log(this.type + " is drinking water");
+    // prevents animals from living indefinately off water alone
+    if (this.hungerLevel === 10) {
+      console.log(this.type + " is too hungry to drink properly");
+      this.gainHealth(2);
+    } else {
+      this.gainHealth(5);
+    }
+    if (this.thirstLevel > 0) {
+      if (this.thirstLevel <= 5) {
+        this.thirstLevel = 0;
+      } else {
+        this.thirstLevel = this.thirstLevel - 5;
+      }
+    }
+  };
+  Animal.prototype.loseHealth = function (healthToLose) {
+    console.log(this.type + " is losing " + healthToLose + " health");
+    this.health = this.health - healthToLose;
+    if (this.health <= 0) {
+      this.setDeceased();
+    }
+  };
+  Animal.prototype.gainHealth = function (healthToGain) {
+    if (this.health + healthToGain > 10) {
+      this.health = 10;
+    } else {
+      this.health = this.health + healthToGain;
+    }
+  };
+  Animal.prototype.setDeceased = function () {
+    console.log(this.type + " has died!");
+    this.health = 0;
+    this.deceased = true;
+    this.icon = "🪦";
+    this.isObstacle = false;
+  };
+  Animal.prototype.getTooltipText = function () {
+    var currentDesire = this.getGreatestDesire();
+    if (this.deceased) {
+      return "\u2620 Here Lies " + this.id + "\n  Died While " + currentDesire;
+    } else {
+      return this.id + "\n    " + currentDesire + "\n    Health: " + this.health;
+    }
+  };
+  return Animal;
+}();
+exports.Animal = Animal;
+var Lion = /** @class */function (_super) {
+  __extends(Lion, _super);
+  function Lion() {
+    return _super.call(this, "lion", "🦁") || this;
+  }
+  Lion.prototype.reproduce = function () {
+    this.reproductiveUrge = 0;
+    return new Lion();
+  };
+  return Lion;
+}(Animal);
+exports.Lion = Lion;
+var Zebra = /** @class */function (_super) {
+  __extends(Zebra, _super);
+  function Zebra() {
+    return _super.call(this, "zebra", "🦓") || this;
+  }
+  Zebra.prototype.reproduce = function () {
+    this.reproductiveUrge = 0;
+    return new Zebra();
+  };
+  return Zebra;
+}(Animal);
+exports.Zebra = Zebra;
+},{"../constants/AnimalDesiresEnum":"src/constants/AnimalDesiresEnum.ts","chance":"node_modules/chance/chance.js"}],"src/types/Plants.ts":[function(require,module,exports) {
+"use strict";
+
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+    };
+    return _extendStatics(d, b);
+  };
+  return function (d, b) {
+    if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+    _extendStatics(d, b);
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Grass = exports.Tree = exports.Plant = void 0;
+var Plant = /** @class */function () {
+  // nutritionalValue: number;
+  function Plant(type) {
+    this.type = type;
+    this.isObstacle = type === "tree";
+    // this.nutritionalValue = 50;
+  }
+
+  return Plant;
+}();
+exports.Plant = Plant;
+var Tree = /** @class */function (_super) {
+  __extends(Tree, _super);
+  function Tree() {
+    var _this = _super.call(this, "tree") || this;
+    _this.icon = "🌳";
+    return _this;
+  }
+  return Tree;
+}(Plant);
+exports.Tree = Tree;
+var Grass = /** @class */function (_super) {
+  __extends(Grass, _super);
+  function Grass() {
+    var _this = _super.call(this, "grass") || this;
+    _this.icon = "🌱";
+    return _this;
+  }
+  return Grass;
+}(Plant);
+exports.Grass = Grass;
+},{}],"src/types/Water.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Water = void 0;
+var Water = /** @class */function () {
+  function Water() {
+    this.type = "water";
+    this.amount = Infinity;
+    this.isObstacle = true;
+  }
+  return Water;
+}();
+exports.Water = Water;
+},{}],"src/types/Dirt.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Dirt = void 0;
+var Dirt = /** @class */function () {
+  function Dirt() {
+    this.type = "dirt";
+    this.isObstacle = false;
+    this.willBecomePlant = false;
+  }
+  Dirt.prototype.turnIntoPlant = function () {
+    this.willBecomePlant = true;
+  };
+  return Dirt;
+}();
+exports.Dirt = Dirt;
+},{}],"src/types/Cell.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Cell = void 0;
+var Cell = /** @class */function () {
+  function Cell(_a) {
+    var x = _a.x,
+      y = _a.y,
+      contents = _a.contents;
+    this.contents = contents;
+    this.x = x;
+    this.y = y;
+  }
+  Cell.prototype.getNearestCellIndexes = function () {
+    return [[this.x - 1, this.y], [this.x + 1, this.y], [this.x, this.y - 1], [this.x, this.y + 1], [this.x - 1, this.y - 1], [this.x + 1, this.y + 1], [this.x + 1, this.y - 1], [this.x - 1, this.y + 1]];
+  };
+  return Cell;
+}();
+exports.Cell = Cell;
+},{}],"src/util/createInitialBoard.ts":[function(require,module,exports) {
 "use strict";
 
 var __importDefault = this && this.__importDefault || function (mod) {
@@ -10302,7 +10413,11 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.createInitialBoard = void 0;
-var classes_1 = require("./classes");
+var Animals_1 = require("../types/Animals");
+var Plants_1 = require("../types/Plants");
+var Water_1 = require("../types/Water");
+var Dirt_1 = require("../types/Dirt");
+var Cell_1 = require("../types/Cell");
 var chance_1 = __importDefault(require("chance"));
 function populateBoard(_a) {
   var boardState = _a.boardState,
@@ -10324,21 +10439,21 @@ function populateBoard(_a) {
     if (cellContainsOnlyDirt) {
       switch (elementType) {
         case "lion":
-          randomCellContents.push(new classes_1.Lion());
+          randomCellContents.push(new Animals_1.Lion());
           break;
         case "zebra":
-          randomCellContents.push(new classes_1.Zebra());
+          randomCellContents.push(new Animals_1.Zebra());
           break;
         case "tree":
-          randomCellContents.push(new classes_1.Plant("tree"));
+          randomCellContents.push(new Plants_1.Tree());
           break;
         case "grass":
-          randomCellContents.push(new classes_1.Plant("grass"));
+          randomCellContents.push(new Plants_1.Grass());
           break;
         case "water":
           // first remove the dirt to replace it with water
           randomCellContents.pop();
-          randomCellContents.push(new classes_1.Water());
+          randomCellContents.push(new Water_1.Water());
       }
     }
   }
@@ -10348,16 +10463,16 @@ function createInitialBoard(_a) {
   var _b = _a.boardSize,
     boardSize = _b === void 0 ? 20 : _b,
     _c = _a.resourceDensity,
-    resourceDensity = _c === void 0 ? "low" : _c,
+    resourceDensity = _c === void 0 ? "medium" : _c,
     _d = _a.treeCount,
-    treeCount = _d === void 0 ? 1 : _d,
+    treeCount = _d === void 0 ? 5 : _d,
     _e = _a.zebraCount,
-    zebraCount = _e === void 0 ? 1 : _e,
+    zebraCount = _e === void 0 ? 4 : _e,
     _f = _a.lionCount,
-    lionCount = _f === void 0 ? 1 : _f;
+    lionCount = _f === void 0 ? 2 : _f;
   // Throw error if user tries to create too many elements.
   if (treeCount + zebraCount + lionCount > boardSize * boardSize) {
-    throw new RangeError("Number of animals and plants exceeds bopard size! Please increase board size or lower number of animals and plants.");
+    throw new RangeError("Number of animals and plants exceeds board size! Please increase board size or lower number of animals and plants.");
   }
   // Create a 2D array of cells that represents the board
   var boardState = [];
@@ -10366,9 +10481,9 @@ function createInitialBoard(_a) {
     var newRow = [];
     // Loop over each column in the row and initialize each cell to just contain dirt
     for (var columnNumber = 0; columnNumber < boardSize; columnNumber++) {
-      var ground = new classes_1.Dirt();
+      var ground = new Dirt_1.Dirt();
       var contents = [ground];
-      var cell = new classes_1.Cell({
+      var cell = new Cell_1.Cell({
         x: rowNumber,
         y: columnNumber,
         contents: contents
@@ -10406,41 +10521,17 @@ function createInitialBoard(_a) {
   return boardState;
 }
 exports.createInitialBoard = createInitialBoard;
-},{"./classes":"src/classes.ts","chance":"node_modules/chance/chance.js"}],"src/util/findNearestCell.ts":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.findNearestCell = void 0;
-// function created by chatgpt and updated with a criteria function and types
-function findNearestCell(x, y, array, criteria) {
-  var minDistance = Number.MAX_VALUE;
-  var nearestCell = null;
-  for (var i = 0; i < array.length; i++) {
-    for (var j = 0; j < array[i].length; j++) {
-      var cell = array[i][j];
-      // ensure cell meets criteria before calculating distance (ex: cell contains water)
-      if (cell && criteria(cell)) {
-        // calculate Euclidean distance
-        var distance = Math.sqrt(Math.pow(i - x, 2) + Math.pow(j - y, 2));
-        if (distance < minDistance) {
-          minDistance = distance;
-          nearestCell = cell;
-        }
-      }
-    }
-  }
-  return nearestCell;
-}
-exports.findNearestCell = findNearestCell;
-},{}],"src/renderBoard.ts":[function(require,module,exports) {
+},{"../types/Animals":"src/types/Animals.ts","../types/Plants":"src/types/Plants.ts","../types/Water":"src/types/Water.ts","../types/Dirt":"src/types/Dirt.ts","../types/Cell":"src/types/Cell.ts","chance":"node_modules/chance/chance.js"}],"src/util/renderBoard.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.renderBoard = void 0;
+var Animals_1 = require("../types/Animals");
+var Plants_1 = require("../types/Plants");
+var Water_1 = require("../types/Water");
+var Dirt_1 = require("../types/Dirt");
 function renderBoard(_a) {
   var board = _a.board,
     boardState = _a.boardState;
@@ -10460,25 +10551,17 @@ function renderBoard(_a) {
       var gridCell = document.createElement("div");
       gridCell.classList.add("cell");
       cell.contents.forEach(function (content) {
-        switch (content.type) {
-          case "grass":
-            gridCell.innerHTML = "🌱";
-            break;
-          case "tree":
-            gridCell.innerHTML = "🌳";
-            break;
-          case "water":
-            gridCell.classList.add("water");
-            break;
-          case "lion":
-            gridCell.innerHTML = content.icon;
-            break;
-          case "zebra":
-            gridCell.innerHTML = content.icon;
-            break;
-          // Dirt is the default
-          default:
-            gridCell.classList.add("dirt");
+        if (content instanceof Animals_1.Lion || content instanceof Animals_1.Zebra) {
+          var tooltipText = content.getTooltipText();
+          gridCell.innerHTML = "<span class=\"tooltip\" data-text=\"" + tooltipText + "\">" + content.icon + "</span>";
+        } else if (content instanceof Plants_1.Grass || content instanceof Plants_1.Tree) {
+          gridCell.innerHTML = content.icon;
+        } else if (content instanceof Water_1.Water) {
+          // We use CSS to represent water, not an icon
+          gridCell.classList.add("water");
+        } else if (content instanceof Dirt_1.Dirt) {
+          // Dirt is the default and it uses CSS instead of an icon
+          gridCell.classList.add("dirt");
         }
       });
       gridRow.appendChild(gridCell);
@@ -10486,7 +10569,7 @@ function renderBoard(_a) {
   });
 }
 exports.renderBoard = renderBoard;
-},{}],"node_modules/lodash/lodash.js":[function(require,module,exports) {
+},{"../types/Animals":"src/types/Animals.ts","../types/Plants":"src/types/Plants.ts","../types/Water":"src/types/Water.ts","../types/Dirt":"src/types/Dirt.ts"}],"node_modules/lodash/lodash.js":[function(require,module,exports) {
 var global = arguments[3];
 var Buffer = require("buffer").Buffer;
 var define;
@@ -27567,7 +27650,35 @@ var define;
   }
 }.call(this));
 
-},{"buffer":"node_modules/buffer/index.js"}],"src/beginGameLoop.ts":[function(require,module,exports) {
+},{"buffer":"node_modules/buffer/index.js"}],"src/util/findNearestCell.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.findNearestCell = void 0;
+// function created by chatgpt and updated with a criteria function and types
+function findNearestCell(x, y, array, criteria) {
+  var minDistance = Number.MAX_VALUE;
+  var nearestCell = null;
+  for (var i = 0; i < array.length; i++) {
+    for (var j = 0; j < array[i].length; j++) {
+      var cell = array[i][j];
+      // ensure cell meets criteria before calculating distance (ex: cell contains water)
+      if (cell && criteria(cell)) {
+        // calculate Euclidean distance
+        var distance = Math.sqrt(Math.pow(i - x, 2) + Math.pow(j - y, 2));
+        if (distance < minDistance) {
+          minDistance = distance;
+          nearestCell = cell;
+        }
+      }
+    }
+  }
+  return nearestCell;
+}
+exports.findNearestCell = findNearestCell;
+},{}],"src/util/moveAnimalTowardDesire.ts":[function(require,module,exports) {
 "use strict";
 
 var __importDefault = this && this.__importDefault || function (mod) {
@@ -27578,41 +27689,37 @@ var __importDefault = this && this.__importDefault || function (mod) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.beginGameLoop = exports.moveAnimalTowardDesire = void 0;
-var classes_1 = require("./classes");
-var findNearestCell_1 = require("./util/findNearestCell");
-var renderBoard_1 = require("./renderBoard");
-var lodash_1 = require("lodash");
+exports.moveAnimalTowardDesire = void 0;
+var findNearestCell_1 = require("./findNearestCell");
 var chance_1 = __importDefault(require("chance"));
 function moveAnimalTowardDesire(_a) {
   var animalCell = _a.animalCell,
-    boardState = _a.boardState,
     updatedBoardState = _a.updatedBoardState,
-    getDesireByClassInstance = _a.getDesireByClassInstance;
-  var nearestDesire = (0, findNearestCell_1.findNearestCell)(animalCell.x, animalCell.y, boardState, function (c) {
-    return c.contents.some(getDesireByClassInstance);
+    getDesire = _a.getDesire,
+    desireFn = _a.desireFn;
+  var nearestDesire = (0, findNearestCell_1.findNearestCell)(animalCell.x, animalCell.y, updatedBoardState, function (c) {
+    return c.contents.some(getDesire);
   });
+  if (!nearestDesire) {
+    return;
+  }
   var alreadyNextToDesire = nearestDesire && (Math.abs(nearestDesire.x - animalCell.x) === 1 || nearestDesire.x === animalCell.x) && (Math.abs(nearestDesire.y - animalCell.y) === 1 || nearestDesire.y === animalCell.y);
   if (alreadyNextToDesire) {
+    desireFn(nearestDesire);
     return;
   }
   var _b = [animalCell.x + Math.sign(nearestDesire.x - animalCell.x), animalCell.y + Math.sign(nearestDesire.y - animalCell.y)],
     newXValue = _b[0],
     newYValue = _b[1];
-  var adjacentCells = animalCell.getNearestCellIndexes().filter(function (_a) {
+  var filterOutOfRangeValues = function filterOutOfRangeValues(_a) {
     var x = _a[0],
       y = _a[1];
-    return x >= 0 && x < boardState.length && y >= 0 && y < boardState[0].length && !boardState[x][y].contents.some(function (e) {
+    return x >= 0 && x < updatedBoardState.length && y >= 0 && y < updatedBoardState[0].length && !updatedBoardState[x][y].contents.some(function (e) {
       return e.isObstacle;
     });
-  });
-  var optimalPath = [[newXValue, newYValue], [newXValue, animalCell.y], [animalCell.x, newYValue]].filter(function (_a) {
-    var x = _a[0],
-      y = _a[1];
-    return x >= 0 && x < boardState.length && y >= 0 && y < boardState[0].length && boardState[x][y].contents.some(function (e) {
-      return e.isObstacle;
-    });
-  });
+  };
+  var adjacentCells = animalCell.getNearestCellIndexes().filter(filterOutOfRangeValues);
+  var optimalPath = [[newXValue, newYValue], [newXValue, animalCell.y], [animalCell.x, newYValue]].filter(filterOutOfRangeValues);
   var _c = optimalPath.length > 0 ? optimalPath[0] : adjacentCells.length > 0 ? (0, chance_1.default)().pickone(adjacentCells) : [animalCell.x, animalCell.y],
     moveToX = _c[0],
     moveToY = _c[1];
@@ -27625,6 +27732,19 @@ function moveAnimalTowardDesire(_a) {
   }
 }
 exports.moveAnimalTowardDesire = moveAnimalTowardDesire;
+},{"./findNearestCell":"src/util/findNearestCell.ts","chance":"node_modules/chance/chance.js"}],"src/util/beginGameLoop.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.beginGameLoop = void 0;
+var Animals_1 = require("../types/Animals");
+var Water_1 = require("../types/Water");
+var renderBoard_1 = require("./renderBoard");
+var lodash_1 = require("lodash");
+var AnimalDesiresEnum_1 = require("../constants/AnimalDesiresEnum");
+var moveAnimalTowardDesire_1 = require("../util/moveAnimalTowardDesire");
 var boardState;
 var updatedBoardState;
 function gameLoop(board) {
@@ -27635,110 +27755,114 @@ function gameLoop(board) {
   // To the animal class, but this will make the code more complicated so as long as it performs well, this should suffice.
   updatedBoardState = (0, lodash_1.cloneDeep)(boardState);
   console.log("UPDATED BOARD STATE: ", updatedBoardState);
-  for (var _i = 0, boardState_1 = boardState; _i < boardState_1.length; _i++) {
-    var row = boardState_1[_i];
-    for (var _a = 0, row_1 = row; _a < row_1.length; _a++) {
-      var cell = row_1[_a];
-      // Really means contains something other than dirt, since dirt will always be the first item in contents[]
-      var cellContainsSomething = cell.contents.length > 1;
-      if (cellContainsSomething) {
-        for (var _b = 0, _c = updatedBoardState[cell.x][cell.y].contents; _b < _c.length; _b++) {
-          var element = _c[_b];
-          // Process animal desires and interactions
-          if (element instanceof classes_1.Animal) {
-            if (element.deceased === true) {
-              break;
-            }
-            element.increaseDesires();
-            var desire = element.getGreatestDesire();
-            console.log(element.type + "'s current desire: " + desire);
-            switch (desire) {
-              case "looking for food":
-                var nearestDesire = (0, findNearestCell_1.findNearestCell)(cell.x, cell.y, boardState, function (c) {
-                  return c.contents.some(function (e) {
-                    return e.type === "grass";
+  try {
+    for (var _i = 0, boardState_1 = boardState; _i < boardState_1.length; _i++) {
+      var row = boardState_1[_i];
+      var _loop_1 = function _loop_1(cell) {
+        // Really means contains something other than dirt, since dirt will always be the first item in contents[]
+        var cellContainsSomething = cell.contents.length > 1;
+        if (cellContainsSomething) {
+          var _loop_2 = function _loop_2(element) {
+            // Process animal desires and interactions
+            if (element instanceof Animals_1.Animal) {
+              if (element.deceased === true) {
+                return "continue";
+              }
+              element.increaseDesires();
+              var desire = element.getGreatestDesire();
+              console.log(element.type + "'s current desire: " + desire);
+              switch (desire) {
+                case AnimalDesiresEnum_1.AnimalDesires.Food:
+                  (0, moveAnimalTowardDesire_1.moveAnimalTowardDesire)({
+                    animalCell: cell,
+                    updatedBoardState: updatedBoardState,
+                    getDesire: function getDesire(desiredElement) {
+                      if (element.type === "zebra") {
+                        return desiredElement.type === "grass";
+                      }
+                      if (element.type === "lion") {
+                        return desiredElement instanceof Animals_1.Zebra && desiredElement.deceased === false;
+                      }
+                    },
+                    desireFn: function desireFn(desiredElement) {
+                      if (element.type === "lion") {
+                        var cellContentsToUpdate = updatedBoardState[desiredElement.x][desiredElement.y].contents;
+                        var zebra = cellContentsToUpdate[cellContentsToUpdate.length - 1];
+                        zebra.setDeceased();
+                      }
+                      element.eat();
+                    }
                   });
-                });
-                var alreadyNextToDesire = nearestDesire && (Math.abs(nearestDesire.x - cell.x) === 1 || nearestDesire.x === cell.x) && (Math.abs(nearestDesire.y - cell.y) === 1 || nearestDesire.y === cell.y);
-                if (alreadyNextToDesire) {
-                  element.eat();
                   break;
-                }
-                var _d = [cell.x + Math.sign(nearestDesire.x - cell.x), cell.y + Math.sign(nearestDesire.y - cell.y)],
-                  newXValue = _d[0],
-                  newYValue = _d[1];
-                var optimalPath = [[newXValue, newYValue], [newXValue, cell.y], [cell.x, newYValue]].filter(function (_a) {
-                  var x = _a[0],
-                    y = _a[1];
-                  return x >= 0 && x < boardState.length && y >= 0 && y < boardState[0].length && !boardState[x][y].contents.some(function (e) {
-                    return e.isObstacle;
+                case AnimalDesiresEnum_1.AnimalDesires.Water:
+                  (0, moveAnimalTowardDesire_1.moveAnimalTowardDesire)({
+                    animalCell: cell,
+                    updatedBoardState: updatedBoardState,
+                    getDesire: function getDesire(e) {
+                      return e instanceof Water_1.Water;
+                    },
+                    desireFn: function desireFn() {
+                      return element.drink();
+                    }
                   });
-                });
-                var _e = optimalPath.length > 0 ? optimalPath[0] : [cell.x, cell.y],
-                  moveToX = _e[0],
-                  moveToY = _e[1];
-                var targetCell = updatedBoardState[moveToX][moveToY];
-                if (!targetCell.contents.some(function (e) {
-                  return e.isObstacle;
-                }) && !targetCell.contents.some(function (e) {
-                  return e instanceof classes_1.Animal;
-                })) {
-                  var movingAnimal = updatedBoardState[cell.x][cell.y].contents.pop();
-                  targetCell.contents.push(movingAnimal);
-                }
-                break;
-              case "looking for water":
-                var nearestDesire = (0, findNearestCell_1.findNearestCell)(cell.x, cell.y, boardState, function (c) {
-                  return c.contents.some(function (e) {
-                    return e instanceof classes_1.Water;
-                  });
-                });
-                var alreadyNextToDesire = nearestDesire && (Math.abs(nearestDesire.x - cell.x) === 1 || nearestDesire.x === cell.x) && (Math.abs(nearestDesire.y - cell.y) === 1 || nearestDesire.y === cell.y);
-                if (alreadyNextToDesire) {
-                  element.drink();
                   break;
-                }
-                var _f = [cell.x + Math.sign(nearestDesire.x - cell.x), cell.y + Math.sign(nearestDesire.y - cell.y)],
-                  newXValue = _f[0],
-                  newYValue = _f[1];
-                var optimalPath = [[newXValue, newYValue], [newXValue, cell.y], [cell.x, newYValue]].filter(function (_a) {
-                  var x = _a[0],
-                    y = _a[1];
-                  return x >= 0 && x < boardState.length && y >= 0 && y < boardState[0].length && !boardState[x][y].contents.some(function (e) {
-                    return e.isObstacle;
+                case AnimalDesiresEnum_1.AnimalDesires.Reproduce:
+                  (0, moveAnimalTowardDesire_1.moveAnimalTowardDesire)({
+                    animalCell: cell,
+                    updatedBoardState: updatedBoardState,
+                    getDesire: function getDesire(desiredElement) {
+                      if (element.type === "zebra") {
+                        return desiredElement instanceof Animals_1.Zebra && desiredElement.deceased === false && desiredElement.id !== element.id;
+                      }
+                      if (element.type === "lion") {
+                        return desiredElement instanceof Animals_1.Lion && desiredElement.deceased === false && desiredElement.id !== element.id;
+                      }
+                    },
+                    desireFn: function desireFn(desiredElement) {
+                      // This pattern is very naive because it expects the last item in the Cell contents
+                      // array to be the animal. This could crash the application if something else is the last
+                      // item in the array.
+                      var animal = desiredElement.contents[desiredElement.contents.length - 1];
+                      if (animal.deceased === false && animal.getGreatestDesire() === AnimalDesiresEnum_1.AnimalDesires.Reproduce) {
+                        var adjacentCells = cell.getNearestCellIndexes().filter(function (_a) {
+                          var x = _a[0],
+                            y = _a[1];
+                          // TODO refactor repeated logic to keep code DRY
+                          return x >= 0 && x < boardState.length && y >= 0 && y < boardState[0].length && !boardState[x][y].contents.some(function (e) {
+                            return e.isObstacle;
+                          });
+                        });
+                        if (adjacentCells.length) {
+                          var baby = element.reproduce();
+                          var _a = adjacentCells[0],
+                            babyX = _a[0],
+                            babyY = _a[1];
+                          updatedBoardState[babyX][babyY].contents.push(baby);
+                        }
+                      }
+                    }
                   });
-                });
-                var _g = optimalPath.length > 0 ? optimalPath[0] : [cell.x, cell.y],
-                  moveToX = _g[0],
-                  moveToY = _g[1];
-                var targetCell = updatedBoardState[moveToX][moveToY];
-                if (!targetCell.contents.some(function (e) {
-                  return e.isObstacle;
-                }) && !targetCell.contents.some(function (e) {
-                  return e instanceof classes_1.Animal;
-                })) {
-                  var movingAnimal = updatedBoardState[cell.x][cell.y].contents.pop();
-                  targetCell.contents.push(movingAnimal);
-                }
-                break;
-              case "looking for mate":
-                moveAnimalTowardDesire({
-                  animalCell: cell,
-                  boardState: boardState,
-                  updatedBoardState: updatedBoardState,
-                  getDesireByClassInstance: function getDesireByClassInstance(e) {
-                    return e instanceof classes_1.Zebra;
-                  }
-                });
-                break;
+                  break;
+              }
+              if (element.hungerLevel === 10 || element.thirstLevel === 10) {
+                element.loseHealth(1);
+              }
             }
-            if (element.hungerLevel === 10 || element.thirstLevel === 10) {
-              element.loseHealth(1);
-            }
+          };
+          for (var _b = 0, _c = updatedBoardState[cell.x][cell.y].contents; _b < _c.length; _b++) {
+            var element = _c[_b];
+            _loop_2(element);
           }
         }
+      };
+      for (var _a = 0, row_1 = row; _a < row_1.length; _a++) {
+        var cell = row_1[_a];
+        _loop_1(cell);
       }
     }
+  } catch (e) {
+    console.error("ERROR IN GAME LOOP: ", e);
+    alert(e);
   }
   boardState = updatedBoardState;
   // Now that we have updated the board state we need to re-render it!
@@ -27758,7 +27882,7 @@ function beginGameLoop(_a) {
   });
   var gameInterval = setInterval(function () {
     return gameLoop(board);
-  }, 3000);
+  }, 5000);
   // ---------------------- CREATE GAME CONTROLS ----------------------
   window.addEventListener("keyup", function (event) {
     if (event.key === "Escape") {
@@ -27767,7 +27891,7 @@ function beginGameLoop(_a) {
   });
 }
 exports.beginGameLoop = beginGameLoop;
-},{"./classes":"src/classes.ts","./util/findNearestCell":"src/util/findNearestCell.ts","./renderBoard":"src/renderBoard.ts","lodash":"node_modules/lodash/lodash.js","chance":"node_modules/chance/chance.js"}],"node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
+},{"../types/Animals":"src/types/Animals.ts","../types/Water":"src/types/Water.ts","./renderBoard":"src/util/renderBoard.ts","lodash":"node_modules/lodash/lodash.js","../constants/AnimalDesiresEnum":"src/constants/AnimalDesiresEnum.ts","../util/moveAnimalTowardDesire":"src/util/moveAnimalTowardDesire.ts"}],"node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
 var bundleURL = null;
 function getBundleURLCached() {
   if (!bundleURL) {
@@ -27828,27 +27952,43 @@ module.hot.accept(reloadCSS);
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-var createInitialBoard_1 = require("./createInitialBoard");
-var beginGameLoop_1 = require("./beginGameLoop");
+var createInitialBoard_1 = require("./util/createInitialBoard");
+var beginGameLoop_1 = require("./util/beginGameLoop");
 require("./styles.css");
+// User controls where we let them set up initial board state and then pause / resume / end game
+var initialSetupFormContainer = document.getElementById("setupFormContainer");
+var initialSetupForm = document.getElementById("setupForm");
 // The board is the actual HTML we want to render. Not to be mistaken for the board state which is Cell[][]
 var board = document.getElementById("board");
-try {
-  // The board state is the JavaScript object representing each cell and it's contents.
-  var initialBoardState = (0, createInitialBoard_1.createInitialBoard)({
-    boardSize: 15,
-    lionCount: 3,
-    zebraCount: 5,
-    resourceDensity: "low"
-  });
-  (0, beginGameLoop_1.beginGameLoop)({
-    initialBoardState: initialBoardState,
-    board: board
-  });
-} catch (error) {
-  alert(error);
-}
-},{"./createInitialBoard":"src/createInitialBoard.ts","./beginGameLoop":"src/beginGameLoop.ts","./styles.css":"src/styles.css"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+initialSetupForm.addEventListener("submit", function (event) {
+  event.preventDefault();
+  var formDataIterable = new FormData(initialSetupForm);
+  var _a = Object.fromEntries(formDataIterable),
+    boardSize = _a.boardSize,
+    lionCount = _a.lionCount,
+    zebraCount = _a.zebraCount,
+    resourceDensity = _a.resourceDensity,
+    treeCount = _a.treeCount;
+  try {
+    // The board state is the JavaScript object representing each cell and it's contents.
+    var initialBoardState = (0, createInitialBoard_1.createInitialBoard)({
+      boardSize: +boardSize,
+      lionCount: +lionCount,
+      zebraCount: +zebraCount,
+      treeCount: +treeCount,
+      resourceDensity: resourceDensity
+    });
+    (0, beginGameLoop_1.beginGameLoop)({
+      initialBoardState: initialBoardState,
+      board: board
+    });
+    // hide setup form
+    initialSetupFormContainer.classList.add("hidden");
+  } catch (error) {
+    alert(error);
+  }
+});
+},{"./util/createInitialBoard":"src/util/createInitialBoard.ts","./util/beginGameLoop":"src/util/beginGameLoop.ts","./styles.css":"src/styles.css"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -27873,7 +28013,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "34115" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "39137" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];
