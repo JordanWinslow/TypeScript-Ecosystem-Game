@@ -126,7 +126,7 @@ export class Animal {
     const currentDesire = this.getGreatestDesire();
 
     if (this.deceased) {
-      return `☠ Here Lies ${this.id}
+      return `☠ Here Lies ${this.id} the ${this.type}
   Died While ${currentDesire}`;
     } else {
       return `${this.id}

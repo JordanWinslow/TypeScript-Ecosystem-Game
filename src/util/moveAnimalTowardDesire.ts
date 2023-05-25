@@ -8,8 +8,9 @@ interface IMoveAnimalTowardDesireParams {
   animalCell: Cell;
   // copy of board state we should update when animal moves
   updatedBoardState: Cell[][];
-  // Desire to move animal towards
+  // function defining the desire criteria to move animal towards (ex: instanceof Animal && animal.deceased === false)
   getDesire: (e: Cell["contents"][number]) => boolean | void;
+  // function to execute when animal comes into contact with desire (ex: animal.eat() animal.drink())
   desireFn: (nearestDesireCell: Cell) => void;
 }
 

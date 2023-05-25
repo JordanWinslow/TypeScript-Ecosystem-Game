@@ -37,3 +37,4 @@ This project was designed to teach the fundamentals of JavaScript and TypeScript
 - HTML Fundamentals such as the DOM (Document Object Model), forms and important browser APIs
 - CSS Fundamentals such as specificity, flexbox and contained scroll behavior
 - Advanced CSS such as pseudo classes and attribute selectors
+- Hands-on explanation of why we don't create design libraries and rendering engines from scratch and instead choose to stand on the shoulders of giants such as bootstrap, materialUI, and tailwind for styling, and React/Vue/Angular/etc. for our rendering framework!
