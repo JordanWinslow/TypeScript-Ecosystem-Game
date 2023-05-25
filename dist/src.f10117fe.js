@@ -10254,7 +10254,7 @@ var Animal = /** @class */function () {
   Animal.prototype.getTooltipText = function () {
     var currentDesire = this.getGreatestDesire();
     if (this.deceased) {
-      return "\u2620 Here Lies " + this.id + "\n  Died While " + currentDesire;
+      return "\u2620 Here Lies " + this.id + " the " + this.type + "\n  Died While " + currentDesire;
     } else {
       return this.id + "\n    " + currentDesire + "\n    Health: " + this.health;
     }
@@ -27891,7 +27891,25 @@ function beginGameLoop(_a) {
   });
 }
 exports.beginGameLoop = beginGameLoop;
-},{"../types/Animals":"src/types/Animals.ts","../types/Water":"src/types/Water.ts","./renderBoard":"src/util/renderBoard.ts","lodash":"node_modules/lodash/lodash.js","../constants/AnimalDesiresEnum":"src/constants/AnimalDesiresEnum.ts","../util/moveAnimalTowardDesire":"src/util/moveAnimalTowardDesire.ts"}],"node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
+},{"../types/Animals":"src/types/Animals.ts","../types/Water":"src/types/Water.ts","./renderBoard":"src/util/renderBoard.ts","lodash":"node_modules/lodash/lodash.js","../constants/AnimalDesiresEnum":"src/constants/AnimalDesiresEnum.ts","../util/moveAnimalTowardDesire":"src/util/moveAnimalTowardDesire.ts"}],"src/util/convertToNumberOrUndefined.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.convertToNumberOrUndefined = void 0;
+function convertToNumberOrUndefined(s) {
+  // empty string will become a 0 when using Number("") which we don't want.
+  if (!s.length) {
+    return undefined;
+  }
+  var number = Number(s);
+  if (isNaN(number)) {
+    return undefined;
+  } else return number;
+}
+exports.convertToNumberOrUndefined = convertToNumberOrUndefined;
+},{}],"node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
 var bundleURL = null;
 function getBundleURLCached() {
   if (!bundleURL) {
@@ -27952,9 +27970,9 @@ module.hot.accept(reloadCSS);
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.convertToNumberOrUndefined = void 0;
 var createInitialBoard_1 = require("./util/createInitialBoard");
 var beginGameLoop_1 = require("./util/beginGameLoop");
+var convertToNumberOrUndefined_1 = require("./util/convertToNumberOrUndefined");
 require("./styles.css");
 // User controls where we let them set up initial board state and then pause / resume / end game
 var initialSetupFormContainer = document.getElementById("setupFormContainer");
@@ -27975,10 +27993,10 @@ initialSetupForm.addEventListener("submit", function (event) {
   try {
     // The board state is the JavaScript object representing each cell and it's contents.
     var initialBoardState = (0, createInitialBoard_1.createInitialBoard)({
-      boardSize: convertToNumberOrUndefined(boardSize),
-      lionCount: convertToNumberOrUndefined(lionCount),
-      zebraCount: convertToNumberOrUndefined(zebraCount),
-      treeCount: convertToNumberOrUndefined(treeCount),
+      boardSize: (0, convertToNumberOrUndefined_1.convertToNumberOrUndefined)(boardSize),
+      lionCount: (0, convertToNumberOrUndefined_1.convertToNumberOrUndefined)(lionCount),
+      zebraCount: (0, convertToNumberOrUndefined_1.convertToNumberOrUndefined)(zebraCount),
+      treeCount: (0, convertToNumberOrUndefined_1.convertToNumberOrUndefined)(treeCount),
       resourceDensity: resourceDensity
     });
     (0, beginGameLoop_1.beginGameLoop)({
@@ -27991,18 +28009,7 @@ initialSetupForm.addEventListener("submit", function (event) {
     alert(error);
   }
 });
-function convertToNumberOrUndefined(s) {
-  // empty string will become a 0 when using Number("") which we don't want.
-  if (!s.length) {
-    return undefined;
-  }
-  var number = Number(s);
-  if (isNaN(number)) {
-    return undefined;
-  } else return number;
-}
-exports.convertToNumberOrUndefined = convertToNumberOrUndefined;
-},{"./util/createInitialBoard":"src/util/createInitialBoard.ts","./util/beginGameLoop":"src/util/beginGameLoop.ts","./styles.css":"src/styles.css"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"./util/createInitialBoard":"src/util/createInitialBoard.ts","./util/beginGameLoop":"src/util/beginGameLoop.ts","./util/convertToNumberOrUndefined":"src/util/convertToNumberOrUndefined.ts","./styles.css":"src/styles.css"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;

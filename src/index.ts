@@ -1,5 +1,6 @@
 import { createInitialBoard } from "./util/createInitialBoard";
 import { beginGameLoop } from "./util/beginGameLoop";
+import { convertToNumberOrUndefined } from "./util/convertToNumberOrUndefined";
 import "./styles.css";
 
 // User controls where we let them set up initial board state and then pause / resume / end game
@@ -39,14 +40,3 @@ initialSetupForm.addEventListener("submit", (event) => {
     alert(error);
   }
 });
-
-export function convertToNumberOrUndefined(s: string){
-  // empty string will become a 0 when using Number("") which we don't want.
-  if(!s.length){
-    return undefined
-  }
-  const number = Number(s)
-  if(isNaN(number)){
-    return undefined
-  } else return number
-}

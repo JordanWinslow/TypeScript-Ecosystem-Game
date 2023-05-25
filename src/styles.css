@@ -110,17 +110,13 @@ label {
     repeating-linear-gradient(#262a7855, #262a78);
 }
 
-.grass {
-  background-color: rgba(0, 255, 0, 0.6);
-}
-
 .dirt {
   background-color: #b67437;
   opacity: 1;
   background-image: radial-gradient(#784e26 0.75px, transparent 0.75px),
-    radial-gradient(#784e26 0.75px, #b67437 0.75px);
-  background-size: 10px 15px;
-  background-position: 0 0, 20px 20px;
+    radial-gradient(#34631e 0.75px, #61972d 0.75px);
+  background-size: 11px 14px;
+  background-position: 0 0, 19px 21px;
 }
 
 /* Tooltip to display when hovering over animals */
