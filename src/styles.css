@@ -1,10 +1,71 @@
+html,
+h3,
+body,
+form {
+  /* undo default browser margins */
+  margin: 0;
+}
+
 body {
   font-family: sans-serif;
   font-size: 30px;
-  margin: unset;
 }
+
 p {
-  font-size: 14px;
+  font-size: 16px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+#setupFormContainer {
+  padding: 30;
+  border-radius: 30px;
+  display: flex;
+  flex-direction: column;
+  /* center above all other content */
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+
+  width: 400px;
+  height: min-content;
+
+  color: darkslategrey;
+  text-align: center;
+  background-color: #fbab7e;
+  background-image: linear-gradient(62deg, #fbab7e 0%, #f7ce68 100%);
+
+  overflow: scroll;
+}
+@media screen and (max-width: 500px) {
+  #setupFormContainer {
+    /* Content will overflow on small screens due to padding without this */
+    box-sizing: border-box;
+    width: 100%;
+    border-radius: 0;
+  }
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+label {
+  font-size: 18px;
+  margin: 25 0 10 0;
+  /* so tooltip will appear immediately to the right of the text instead of at the edge of the window */
+  width: max-content;
+}
+
+#submit {
+  margin-top: 30;
 }
 
 #app {
@@ -14,11 +75,14 @@ p {
   overflow: hidden;
 }
 
-#board {
+#boardContainer {
   display: flex;
-  flex-direction: column;
   height: 100%;
   overflow: scroll;
+}
+
+#board {
+  margin: auto;
 }
 
 .row {
@@ -59,6 +123,7 @@ p {
   background-position: 0 0, 20px 20px;
 }
 
+/* Tooltip to display when hovering over animals */
 .tooltip {
   cursor: pointer;
   position: relative;
@@ -85,10 +150,7 @@ p {
 
   display: none; /* hide by default */
 }
+
 .tooltip:hover:before {
   display: block;
-}
-
-.hidden {
-  display: none;
 }

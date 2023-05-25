@@ -7,7 +7,6 @@
 
   <body>
     <div id="app">
-      <h2>Ecosystem Sim</h2>
       <div id='setupFormContainer'>
         <h3>Set up initial ecosystem</h3>
         <p>Determine the starting conditions for your ecosystem, or leave empty and click submit to start with default values</p>
@@ -22,7 +21,7 @@
             <option value="100" id="boardSize-4">Will Cause Glitches (100 x 100)</option>
         </select>
         
-        <label for="resourceDensity">Resource Density<span class="tooltip" data-text="Determines how much food and water will be available on the board.">?</span></label>
+        <label for="resourceDensity" class='tooltip' data-text="Determines how much food and water will be available on the board.">Resource Density</label>
         <select class="form-control" name="resourceDensity" id="resourceDensity">
             <option value="low" selected="true" id="resourceDensity-0">Low</option>
             <option value="medium" id="resourceDensity-1">Medium</option>
@@ -30,18 +29,20 @@
         </select>
         
         <label for='lionCount'>Number of Lions</label>
-        <input name='lionCount' type='number' />
+        <input name='lionCount' type='number' min='0'/>
         
         <label for='zebraCount'>Number of Zebras</label>
-        <input name='zebraCount' type='number' />
+        <input name='zebraCount' type='number' min='0' />
         
         <label for='treeCount'>Number of Trees</label>
-        <input name='treeCount' type='number' />
+        <input name='treeCount' type='number' min='0'/>
         
         <button id='submit' type='submit'>Begin Simulation</button>
         </form>
       </div>
-      <div id="board"></div>
+      <div id='boardContainer'>
+        <div id="board"></div>
+      </div>
     </div>
 
     <script src="src/index.ts"></script>
