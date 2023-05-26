@@ -1,5 +1,9 @@
 # Ecosystem Simulator Programmed Entirely in Vanilla TypeScript HTML and CSS
-Created by Jordan Winslow
+Created by Jordan Winslow and inspired by Conway's Game of Life
+
+Game Setup Form            |  Game In Progress
+:-------------------------:|:-------------------------:
+![](https://i.ibb.co/z8wFGxj/Screenshot-2023-05-26-1-14-55-PM.png)  |  ![](https://i.ibb.co/LZwVhNz/Screenshot-2023-05-26-1-18-16-PM.png)
 
 ## Game Mechanics
 #### Animal Desires: 
