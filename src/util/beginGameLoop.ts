@@ -106,11 +106,11 @@ export function beginGameLoop({
         isPaused = true;
       }
     }
-    if (event.key === "ArrowUp") {
+    if (event.key === "ArrowDown") {
       GAME_SPEED = GAME_SPEED + 1000;
       shouldUpdateInterval = true;
     }
-    if (event.key === "ArrowDown") {
+    if (event.key === "ArrowUp") {
       if (GAME_SPEED === 1000) {
         // don't let user make game faster than 1 render per second
         return;
