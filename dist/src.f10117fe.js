@@ -10254,9 +10254,13 @@ var Animal = /** @class */function () {
   Animal.prototype.getTooltipText = function () {
     var currentDesire = this.getGreatestDesire();
     if (this.deceased) {
-      return "\u2620 Here Lies " + this.id + " the " + this.type + "\n  Died While " + currentDesire;
+      var t = this.type;
+      // Capitalize "zebra" or "lion" to "Zebra" & "Lion"
+      var type = t.substr(0, 1).toUpperCase().concat(t.substring(1));
+      // to make use of tooltip pre-wrap we can't allow the code formatter to indent our strings.
+      return "\u2620 Here Lies " + this.id + " The " + type + " Who Died While " + currentDesire;
     } else {
-      return this.id + "\n    " + currentDesire + "\n    Health: " + this.health;
+      return this.id + "\n" + currentDesire + "\nHealth: " + this.health;
     }
   };
   return Animal;
@@ -10435,7 +10439,7 @@ function populateBoard(_a) {
       max: boardSize - 1
     });
     var randomCellContents = boardState[randomCellX][randomCellY].contents;
-    var cellContainsOnlyDirt = randomCellContents.length === 1;
+    var cellContainsOnlyDirt = randomCellContents.length === 1 && randomCellContents[0] instanceof Dirt_1.Dirt;
     if (cellContainsOnlyDirt) {
       switch (elementType) {
         case "lion":
@@ -10455,6 +10459,14 @@ function populateBoard(_a) {
           randomCellContents.pop();
           randomCellContents.push(new Water_1.Water());
       }
+    } else {
+      // random cell already had something so choose new cell recursively with 1 count until we succeed.
+      populateBoard({
+        boardState: boardState,
+        boardSize: boardSize,
+        elementCount: 1,
+        elementType: elementType
+      });
     }
   }
 }
@@ -10536,15 +10548,13 @@ function renderBoard(_a) {
   var board = _a.board,
     boardState = _a.boardState;
   console.log("Rendering Board State: ", boardState);
-  // Clear the board so we don't end up creating new boards every iteration
-  // NAIVE and SLOW approach since we tear down every div and rebuild from scratch
-  board.innerHTML = "";
+  var updatedBoard = document.createElement("div");
   // Loop through every row
   boardState.forEach(function (row) {
     // Create an HTML Div element to hold each cell in an individual row
     var gridRow = document.createElement("div");
     gridRow.className = "row";
-    board.appendChild(gridRow);
+    updatedBoard.appendChild(gridRow);
     // Loop through every cell in the current row
     row.forEach(function (cell) {
       // Create an HTML Div element reprensenting each cell and it's contents
@@ -10567,6 +10577,7 @@ function renderBoard(_a) {
       gridRow.appendChild(gridCell);
     });
   });
+  board.innerHTML = updatedBoard.innerHTML;
 }
 exports.renderBoard = renderBoard;
 },{"../types/Animals":"src/types/Animals.ts","../types/Plants":"src/types/Plants.ts","../types/Water":"src/types/Water.ts","../types/Dirt":"src/types/Dirt.ts"}],"node_modules/lodash/lodash.js":[function(require,module,exports) {
@@ -27732,7 +27743,98 @@ function moveAnimalTowardDesire(_a) {
   }
 }
 exports.moveAnimalTowardDesire = moveAnimalTowardDesire;
-},{"./findNearestCell":"src/util/findNearestCell.ts","chance":"node_modules/chance/chance.js"}],"src/util/beginGameLoop.ts":[function(require,module,exports) {
+},{"./findNearestCell":"src/util/findNearestCell.ts","chance":"node_modules/chance/chance.js"}],"src/util/processAnimalDesires.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.processAnimalDesires = void 0;
+var Animals_1 = require("../types/Animals");
+var Water_1 = require("../types/Water");
+var AnimalDesiresEnum_1 = require("../constants/AnimalDesiresEnum");
+var moveAnimalTowardDesire_1 = require("../util/moveAnimalTowardDesire");
+function processAnimalDesires(_a) {
+  var desire = _a.desire,
+    animalCell = _a.animalCell,
+    animal = _a.animal,
+    updatedBoardState = _a.updatedBoardState;
+  switch (desire) {
+    case AnimalDesiresEnum_1.AnimalDesires.Food:
+      (0, moveAnimalTowardDesire_1.moveAnimalTowardDesire)({
+        animalCell: animalCell,
+        updatedBoardState: updatedBoardState,
+        getDesire: function getDesire(desiredElement) {
+          if (animal.type === "zebra") {
+            return desiredElement.type === "grass";
+          }
+          if (animal.type === "lion") {
+            return desiredElement instanceof Animals_1.Zebra && desiredElement.deceased === false;
+          }
+        },
+        desireFn: function desireFn(desiredElement) {
+          if (animal.type === "lion") {
+            var cellContentsToUpdate = updatedBoardState[desiredElement.x][desiredElement.y].contents;
+            var zebra = cellContentsToUpdate[cellContentsToUpdate.length - 1];
+            zebra.setDeceased();
+          }
+          animal.eat();
+        }
+      });
+      break;
+    case AnimalDesiresEnum_1.AnimalDesires.Water:
+      (0, moveAnimalTowardDesire_1.moveAnimalTowardDesire)({
+        animalCell: animalCell,
+        updatedBoardState: updatedBoardState,
+        getDesire: function getDesire(e) {
+          return e instanceof Water_1.Water;
+        },
+        desireFn: function desireFn() {
+          return animal.drink();
+        }
+      });
+      break;
+    case AnimalDesiresEnum_1.AnimalDesires.Reproduce:
+      (0, moveAnimalTowardDesire_1.moveAnimalTowardDesire)({
+        animalCell: animalCell,
+        updatedBoardState: updatedBoardState,
+        getDesire: function getDesire(desiredElement) {
+          if (animal.type === "zebra") {
+            return desiredElement instanceof Animals_1.Zebra && desiredElement.deceased === false && desiredElement.id !== animal.id;
+          }
+          if (animal.type === "lion") {
+            return desiredElement instanceof Animals_1.Lion && desiredElement.deceased === false && desiredElement.id !== animal.id;
+          }
+        },
+        desireFn: function desireFn(desiredElement) {
+          // This pattern is very naive because it expects the last item in the Cell contents
+          // array to be the animal. This could crash the application if something else is the last
+          // item in the array.
+          var animal = desiredElement.contents[desiredElement.contents.length - 1];
+          if (animal.deceased === false && animal.getGreatestDesire() === AnimalDesiresEnum_1.AnimalDesires.Reproduce) {
+            var adjacentCells = animalCell.getNearestCellIndexes().filter(function (_a) {
+              var x = _a[0],
+                y = _a[1];
+              // TODO refactor repeated logic to keep code DRY
+              return x >= 0 && x < updatedBoardState.length && y >= 0 && y < updatedBoardState[0].length && !updatedBoardState[x][y].contents.some(function (e) {
+                return e.isObstacle;
+              });
+            });
+            if (adjacentCells.length) {
+              var baby = animal.reproduce();
+              var _a = adjacentCells[0],
+                babyX = _a[0],
+                babyY = _a[1];
+              updatedBoardState[babyX][babyY].contents.push(baby);
+            }
+          }
+        }
+      });
+      break;
+  }
+}
+exports.processAnimalDesires = processAnimalDesires;
+},{"../types/Animals":"src/types/Animals.ts","../types/Water":"src/types/Water.ts","../constants/AnimalDesiresEnum":"src/constants/AnimalDesiresEnum.ts","../util/moveAnimalTowardDesire":"src/util/moveAnimalTowardDesire.ts"}],"src/util/beginGameLoop.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -27740,14 +27842,31 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.beginGameLoop = void 0;
 var Animals_1 = require("../types/Animals");
-var Water_1 = require("../types/Water");
 var renderBoard_1 = require("./renderBoard");
 var lodash_1 = require("lodash");
-var AnimalDesiresEnum_1 = require("../constants/AnimalDesiresEnum");
-var moveAnimalTowardDesire_1 = require("../util/moveAnimalTowardDesire");
+var processAnimalDesires_1 = require("./processAnimalDesires");
+var GAME_SPEED = 3000;
+var gameInterval;
+var shouldUpdateInterval = false;
+var isPaused = false;
 var boardState;
 var updatedBoardState;
 function gameLoop(board) {
+  if (isPaused) {
+    // do nothing if game paused
+    return;
+  }
+  if (shouldUpdateInterval) {
+    // User has updated the game speed so we must re-create the interval at that speed before
+    // beginning a new round.
+    shouldUpdateInterval = false;
+    clearInterval(gameInterval);
+    gameInterval = setInterval(function () {
+      return gameLoop(board);
+    }, GAME_SPEED);
+    // exit the current round before processing since a new interval will begin
+    return;
+  }
   console.log("ROUND BEGINNING");
   // Create copy of board state to perform all updates on during iteration so we don't mutate the original while looping.
   // We need a robust function for this since it involves copying a class instance inside of a 2 dimensional array.
@@ -27758,106 +27877,33 @@ function gameLoop(board) {
   try {
     for (var _i = 0, boardState_1 = boardState; _i < boardState_1.length; _i++) {
       var row = boardState_1[_i];
-      var _loop_1 = function _loop_1(cell) {
+      for (var _a = 0, row_1 = row; _a < row_1.length; _a++) {
+        var cell = row_1[_a];
         // Really means contains something other than dirt, since dirt will always be the first item in contents[]
         var cellContainsSomething = cell.contents.length > 1;
         if (cellContainsSomething) {
-          var _loop_2 = function _loop_2(element) {
+          for (var _b = 0, _c = updatedBoardState[cell.x][cell.y].contents; _b < _c.length; _b++) {
+            var element = _c[_b];
             // Process animal desires and interactions
             if (element instanceof Animals_1.Animal) {
               if (element.deceased === true) {
-                return "continue";
+                continue;
               }
               element.increaseDesires();
               var desire = element.getGreatestDesire();
               console.log(element.type + "'s current desire: " + desire);
-              switch (desire) {
-                case AnimalDesiresEnum_1.AnimalDesires.Food:
-                  (0, moveAnimalTowardDesire_1.moveAnimalTowardDesire)({
-                    animalCell: cell,
-                    updatedBoardState: updatedBoardState,
-                    getDesire: function getDesire(desiredElement) {
-                      if (element.type === "zebra") {
-                        return desiredElement.type === "grass";
-                      }
-                      if (element.type === "lion") {
-                        return desiredElement instanceof Animals_1.Zebra && desiredElement.deceased === false;
-                      }
-                    },
-                    desireFn: function desireFn(desiredElement) {
-                      if (element.type === "lion") {
-                        var cellContentsToUpdate = updatedBoardState[desiredElement.x][desiredElement.y].contents;
-                        var zebra = cellContentsToUpdate[cellContentsToUpdate.length - 1];
-                        zebra.setDeceased();
-                      }
-                      element.eat();
-                    }
-                  });
-                  break;
-                case AnimalDesiresEnum_1.AnimalDesires.Water:
-                  (0, moveAnimalTowardDesire_1.moveAnimalTowardDesire)({
-                    animalCell: cell,
-                    updatedBoardState: updatedBoardState,
-                    getDesire: function getDesire(e) {
-                      return e instanceof Water_1.Water;
-                    },
-                    desireFn: function desireFn() {
-                      return element.drink();
-                    }
-                  });
-                  break;
-                case AnimalDesiresEnum_1.AnimalDesires.Reproduce:
-                  (0, moveAnimalTowardDesire_1.moveAnimalTowardDesire)({
-                    animalCell: cell,
-                    updatedBoardState: updatedBoardState,
-                    getDesire: function getDesire(desiredElement) {
-                      if (element.type === "zebra") {
-                        return desiredElement instanceof Animals_1.Zebra && desiredElement.deceased === false && desiredElement.id !== element.id;
-                      }
-                      if (element.type === "lion") {
-                        return desiredElement instanceof Animals_1.Lion && desiredElement.deceased === false && desiredElement.id !== element.id;
-                      }
-                    },
-                    desireFn: function desireFn(desiredElement) {
-                      // This pattern is very naive because it expects the last item in the Cell contents
-                      // array to be the animal. This could crash the application if something else is the last
-                      // item in the array.
-                      var animal = desiredElement.contents[desiredElement.contents.length - 1];
-                      if (animal.deceased === false && animal.getGreatestDesire() === AnimalDesiresEnum_1.AnimalDesires.Reproduce) {
-                        var adjacentCells = cell.getNearestCellIndexes().filter(function (_a) {
-                          var x = _a[0],
-                            y = _a[1];
-                          // TODO refactor repeated logic to keep code DRY
-                          return x >= 0 && x < boardState.length && y >= 0 && y < boardState[0].length && !boardState[x][y].contents.some(function (e) {
-                            return e.isObstacle;
-                          });
-                        });
-                        if (adjacentCells.length) {
-                          var baby = element.reproduce();
-                          var _a = adjacentCells[0],
-                            babyX = _a[0],
-                            babyY = _a[1];
-                          updatedBoardState[babyX][babyY].contents.push(baby);
-                        }
-                      }
-                    }
-                  });
-                  break;
-              }
+              (0, processAnimalDesires_1.processAnimalDesires)({
+                desire: desire,
+                animalCell: cell,
+                animal: element,
+                updatedBoardState: updatedBoardState
+              });
               if (element.hungerLevel === 10 || element.thirstLevel === 10) {
                 element.loseHealth(1);
               }
             }
-          };
-          for (var _b = 0, _c = updatedBoardState[cell.x][cell.y].contents; _b < _c.length; _b++) {
-            var element = _c[_b];
-            _loop_2(element);
           }
         }
-      };
-      for (var _a = 0, row_1 = row; _a < row_1.length; _a++) {
-        var cell = row_1[_a];
-        _loop_1(cell);
       }
     }
   } catch (e) {
@@ -27880,18 +27926,41 @@ function beginGameLoop(_a) {
     boardState: boardState,
     board: board
   });
-  var gameInterval = setInterval(function () {
+  gameInterval = setInterval(function () {
     return gameLoop(board);
-  }, 5000);
+  }, GAME_SPEED);
   // ---------------------- CREATE GAME CONTROLS ----------------------
   window.addEventListener("keyup", function (event) {
+    console.log(event.key);
     if (event.key === "Escape") {
-      clearInterval(gameInterval);
+      // refresh the page to reset game
+      location.reload();
+    }
+    // Spacebar
+    if (event.key === " ") {
+      if (isPaused) {
+        isPaused = false;
+      } else {
+        isPaused = true;
+      }
+    }
+    if (event.key === "ArrowUp") {
+      GAME_SPEED = GAME_SPEED + 1000;
+      shouldUpdateInterval = true;
+    }
+    if (event.key === "ArrowDown") {
+      if (GAME_SPEED === 1000) {
+        // don't let user make game faster than 1 render per second
+        return;
+      } else {
+        GAME_SPEED = GAME_SPEED - 1000;
+        shouldUpdateInterval = true;
+      }
     }
   });
 }
 exports.beginGameLoop = beginGameLoop;
-},{"../types/Animals":"src/types/Animals.ts","../types/Water":"src/types/Water.ts","./renderBoard":"src/util/renderBoard.ts","lodash":"node_modules/lodash/lodash.js","../constants/AnimalDesiresEnum":"src/constants/AnimalDesiresEnum.ts","../util/moveAnimalTowardDesire":"src/util/moveAnimalTowardDesire.ts"}],"src/util/convertToNumberOrUndefined.ts":[function(require,module,exports) {
+},{"../types/Animals":"src/types/Animals.ts","./renderBoard":"src/util/renderBoard.ts","lodash":"node_modules/lodash/lodash.js","./processAnimalDesires":"src/util/processAnimalDesires.ts"}],"src/util/convertToNumberOrUndefined.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
