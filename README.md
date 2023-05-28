@@ -1,5 +1,8 @@
 # Ecosystem Simulator Programmed Entirely in Vanilla TypeScript HTML and CSS
-Created by Jordan Winslow and inspired by Conway's Game of Life
+Created by Jordan Winslow and inspired by Conway's Game of Life.
+
+Live Demo: https://typescript-ecosystem-simulator.netlify.app/
+
 
 Game Setup Form            |  Game In Progress
 :-------------------------:|:-------------------------:
