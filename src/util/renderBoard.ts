@@ -11,15 +11,14 @@ interface IRenderBoardParams {
 
 export function renderBoard({ board, boardState }: IRenderBoardParams) {
   console.log("Rendering Board State: ", boardState);
-  // Clear the board so we don't end up creating new boards every iteration
-  // NAIVE and SLOW approach since we tear down every div and rebuild from scratch
-  board.innerHTML = "";
+  const updatedBoard = document.createElement("div");
+
   // Loop through every row
   boardState.forEach((row) => {
     // Create an HTML Div element to hold each cell in an individual row
     const gridRow = document.createElement("div");
     gridRow.className = "row";
-    board.appendChild(gridRow);
+    updatedBoard.appendChild(gridRow);
 
     // Loop through every cell in the current row
     row.forEach((cell) => {
@@ -45,4 +44,5 @@ export function renderBoard({ board, boardState }: IRenderBoardParams) {
       gridRow.appendChild(gridCell);
     });
   });
+  board.innerHTML = updatedBoard.innerHTML;
 }

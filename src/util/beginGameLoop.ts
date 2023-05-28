@@ -1,20 +1,31 @@
 import { Cell } from "../types/Cell";
-import { Lion, Zebra, Animal } from "../types/Animals";
-import { Water } from "../types/Water";
+import { Animal } from "../types/Animals";
 import { renderBoard } from "./renderBoard";
 import { cloneDeep } from "lodash";
-import { AnimalDesires } from "../constants/AnimalDesiresEnum";
-import { moveAnimalTowardDesire } from "../util/moveAnimalTowardDesire";
+import { processAnimalDesires } from "./processAnimalDesires";
 
-interface IBeginGameLoopParams {
-  initialBoardState: Cell[][];
-  board: HTMLDivElement;
-}
-
+let GAME_SPEED = 3000;
+let gameInterval;
+let shouldUpdateInterval = false;
+let isPaused = false;
 let boardState: Cell[][];
 let updatedBoardState: Cell[][];
 
 function gameLoop(board: HTMLDivElement) {
+  if (isPaused) {
+    // do nothing if game paused
+    return;
+  }
+
+  if (shouldUpdateInterval) {
+    // User has updated the game speed so we must re-create the interval at that speed before
+    // beginning a new round.
+    shouldUpdateInterval = false;
+    clearInterval(gameInterval);
+    gameInterval = setInterval(() => gameLoop(board), GAME_SPEED);
+    // exit the current round before processing since a new interval will begin
+    return;
+  }
   console.log("ROUND BEGINNING");
   // Create copy of board state to perform all updates on during iteration so we don't mutate the original while looping.
   // We need a robust function for this since it involves copying a class instance inside of a 2 dimensional array.
@@ -40,102 +51,12 @@ function gameLoop(board: HTMLDivElement) {
               const desire = element.getGreatestDesire();
               console.log(`${element.type}'s current desire: ${desire}`);
 
-              switch (desire) {
-                case AnimalDesires.Food:
-                  moveAnimalTowardDesire({
-                    animalCell: cell,
-                    updatedBoardState,
-                    getDesire: (desiredElement) => {
-                      if (element.type === "zebra") {
-                        return desiredElement.type === "grass";
-                      }
-                      if (element.type === "lion") {
-                        return (
-                          desiredElement instanceof Zebra &&
-                          desiredElement.deceased === false
-                        );
-                      }
-                    },
-                    desireFn: (desiredElement) => {
-                      if (element.type === "lion") {
-                        const cellContentsToUpdate =
-                          updatedBoardState[desiredElement.x][desiredElement.y]
-                            .contents;
-                        const zebra = cellContentsToUpdate[
-                          cellContentsToUpdate.length - 1
-                        ] as Zebra;
-                        zebra.setDeceased();
-                      }
-                      element.eat();
-                    },
-                  });
-                  break;
-
-                case AnimalDesires.Water:
-                  moveAnimalTowardDesire({
-                    animalCell: cell,
-                    updatedBoardState,
-                    getDesire: (e) => e instanceof Water,
-                    desireFn: () => element.drink(),
-                  });
-                  break;
-
-                case AnimalDesires.Reproduce:
-                  moveAnimalTowardDesire({
-                    animalCell: cell,
-                    updatedBoardState,
-                    getDesire: (desiredElement) => {
-                      if (element.type === "zebra") {
-                        return (
-                          desiredElement instanceof Zebra &&
-                          desiredElement.deceased === false &&
-                          desiredElement.id !== element.id
-                        );
-                      }
-                      if (element.type === "lion") {
-                        return (
-                          desiredElement instanceof Lion &&
-                          desiredElement.deceased === false &&
-                          desiredElement.id !== element.id
-                        );
-                      }
-                    },
-                    desireFn: (desiredElement) => {
-                      // This pattern is very naive because it expects the last item in the Cell contents
-                      // array to be the animal. This could crash the application if something else is the last
-                      // item in the array.
-                      const animal = desiredElement.contents[
-                        desiredElement.contents.length - 1
-                      ] as Lion | Zebra;
-                      if (
-                        animal.deceased === false &&
-                        animal.getGreatestDesire() === AnimalDesires.Reproduce
-                      ) {
-                        const adjacentCells = cell
-                          .getNearestCellIndexes()
-                          .filter(([x, y]) => {
-                            // TODO refactor repeated logic to keep code DRY
-                            return (
-                              x >= 0 &&
-                              x < boardState.length &&
-                              y >= 0 &&
-                              y < boardState[0].length &&
-                              !boardState[x][y].contents.some(
-                                (e) => e.isObstacle
-                              )
-                            );
-                          });
-
-                        if (adjacentCells.length) {
-                          const baby = element.reproduce();
-                          const [babyX, babyY] = adjacentCells[0];
-                          updatedBoardState[babyX][babyY].contents.push(baby);
-                        }
-                      }
-                    },
-                  });
-                  break;
-              }
+              processAnimalDesires({
+                desire,
+                animalCell: cell,
+                animal: element,
+                updatedBoardState,
+              });
 
               if (element.hungerLevel === 10 || element.thirstLevel === 10) {
                 element.loseHealth(1);
@@ -155,6 +76,11 @@ function gameLoop(board: HTMLDivElement) {
   renderBoard({ boardState, board });
 }
 
+interface IBeginGameLoopParams {
+  initialBoardState: Cell[][];
+  board: HTMLDivElement;
+}
+
 export function beginGameLoop({
   initialBoardState,
   board,
@@ -163,12 +89,35 @@ export function beginGameLoop({
   boardState = initialBoardState;
   renderBoard({ boardState, board });
 
-  const gameInterval = setInterval(() => gameLoop(board), 5000);
+  gameInterval = setInterval(() => gameLoop(board), GAME_SPEED);
 
   // ---------------------- CREATE GAME CONTROLS ----------------------
   window.addEventListener("keyup", (event) => {
+    console.log(event.key);
     if (event.key === "Escape") {
-      clearInterval(gameInterval);
+      // refresh the page to reset game
+      location.reload();
+    }
+    // Spacebar
+    if (event.key === " ") {
+      if (isPaused) {
+        isPaused = false;
+      } else {
+        isPaused = true;
+      }
+    }
+    if (event.key === "ArrowUp") {
+      GAME_SPEED = GAME_SPEED + 1000;
+      shouldUpdateInterval = true;
+    }
+    if (event.key === "ArrowDown") {
+      if (GAME_SPEED === 1000) {
+        // don't let user make game faster than 1 render per second
+        return;
+      } else {
+        GAME_SPEED = GAME_SPEED - 1000;
+        shouldUpdateInterval = true;
+      }
     }
   });
 }

@@ -27,7 +27,8 @@ function populateBoard({
     const randomCellX = chance().integer({ min: 0, max: boardSize - 1 });
     const randomCellY = chance().integer({ min: 0, max: boardSize - 1 });
     const randomCellContents = boardState[randomCellX][randomCellY].contents;
-    const cellContainsOnlyDirt = randomCellContents.length === 1;
+    const cellContainsOnlyDirt =
+      randomCellContents.length === 1 && randomCellContents[0] instanceof Dirt;
 
     if (cellContainsOnlyDirt) {
       switch (elementType) {
@@ -48,6 +49,9 @@ function populateBoard({
           randomCellContents.pop();
           randomCellContents.push(new Water());
       }
+    } else {
+      // random cell already had something so choose new cell recursively with 1 count until we succeed.
+      populateBoard({ boardState, boardSize, elementCount: 1, elementType });
     }
   }
 }

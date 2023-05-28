@@ -126,12 +126,15 @@ export class Animal {
     const currentDesire = this.getGreatestDesire();
 
     if (this.deceased) {
-      return `☠ Here Lies ${this.id} the ${this.type}
-  Died While ${currentDesire}`;
+      const t = this.type;
+      // Capitalize "zebra" or "lion" to "Zebra" & "Lion"
+      const type = t.substr(0, 1).toUpperCase().concat(t.substring(1));
+      // to make use of tooltip pre-wrap we can't allow the code formatter to indent our strings.
+      return `☠ Here Lies ${this.id} The ${type} Who Died While ${currentDesire}`;
     } else {
       return `${this.id}
-    ${currentDesire}
-    Health: ${this.health}`;
+${currentDesire}
+Health: ${this.health}`;
     }
   }
 }
