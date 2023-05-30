@@ -1,5 +1,5 @@
-import { AnimalDesires } from "../constants/AnimalDesiresEnum";
 import chance from "chance";
+import { AnimalDesires } from "../constants/AnimalDesiresEnum";
 
 export class Animal {
   id: string;

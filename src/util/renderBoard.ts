@@ -1,8 +1,8 @@
-import { Cell } from "../types/Cell";
 import { Lion, Zebra } from "../types/Animals";
+import { Cell } from "../types/Cell";
+import { Dirt } from "../types/Dirt";
 import { Grass, Tree } from "../types/Plants";
 import { Water } from "../types/Water";
-import { Dirt } from "../types/Dirt";
 
 interface IRenderBoardParams {
   board: HTMLDivElement;

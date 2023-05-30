@@ -1,7 +1,61 @@
-<html><head><meta name="viewport" content="width=device-width, initial-scale=1"><meta charset="UTF-8"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""><link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=fallback" rel="stylesheet"><title>TypeScript Ecosystem Sim Game by Jordan Winslow</title><link rel="stylesheet" href="/src.f3b0cf76.css"></head><body> <div id="app"> <div id="setupFormContainer"> <h3>Set up initial ecosystem</h3> <p>Determine the starting conditions for your ecosystem, or leave empty and click submit to start with default values</p> <form id="setupForm"> <label for="boardSize" class="tooltip" data-text="Determines how many cells will make up the game board.">Board Size</label> <select class="form-control" name="boardSize" id="boardSize"> <option value="10" selected="" id="boardSize-0">Small (10 x 10)</option> <option value="20" id="boardSize-1">Medium (20 x 20)</option> <option value="30" id="boardSize-2">Large (30 x 30)</option> <option value="50" id="boardSize-3">Massive (50 x 50)</option> <option value="100" id="boardSize-4">Will Cause Glitches (100 x 100)</option> </select> <label for="resourceDensity" class="tooltip" data-text="Determines how much food and water will be available.">Resource Density</label> <select class="form-control" name="resourceDensity" id="resourceDensity"> <option value="low" selected="" id="resourceDensity-0">Low</option> <option value="medium" id="resourceDensity-1">Medium</option> <option value="high" id="resourceDensity-2">High</option> </select> <label for="lionCount" class="tooltip" data-text="Lions eat Zebras." "="">Number of Lions</label> <input name="lionCount" type="number" min="0"> <label for="zebraCount" class="tooltip" data-text="Zebras eat Grass.">Number of Zebras</label> <input name="zebraCount" type="number" min="0"> <label for="treeCount" class="tooltip" data-text="Trees act as obstacles for Animals and serve no other purpose other than being pretty to look at.">Number of Trees</label> <input name="treeCount" type="number" min="0"> <button id="submit" type="submit">Begin Simulation</button> </form> </div> <div id="boardContainer"> <div id="gameControls" class="left tooltip" data-text="Escape: Restart game and input new starting conditions
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <!-- display=fallback prevents users seeing a different font while google fonts load-->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=fallback" rel="stylesheet">
+    <title>TypeScript Ecosystem Sim Game by Jordan Winslow</title>
+    <link rel="stylesheet" href="/index.4d663569.css"><script src="/index.b71e74eb.js" defer=""></script>
+  </head>
+
+  <body>
+    <div id="app">
+      <div id="setupFormContainer">
+        <h3>Set up initial ecosystem</h3>
+        <p>Determine the starting conditions for your ecosystem, or leave empty and click submit to start with default values</p>
+        
+        <form id="setupForm">
+        <label for="boardSize" class="tooltip" data-text="Determines how many cells will make up the game board.">Board Size</label>
+        <select class="form-control" name="boardSize" id="boardSize">
+            <option value="10" selected="true" id="boardSize-0">Small (10 x 10)</option>
+            <option value="20" id="boardSize-1">Medium (20 x 20)</option>
+            <option value="30" id="boardSize-2">Large (30 x 30)</option>
+            <option value="50" id="boardSize-3">Massive (50 x 50)</option>
+            <option value="100" id="boardSize-4">Will Cause Glitches (100 x 100)</option>
+        </select>
+        
+        <label for="resourceDensity" class="tooltip" data-text="Determines how much food and water will be available.">Resource Density</label>
+        <select class="form-control" name="resourceDensity" id="resourceDensity">
+            <option value="low" selected="true" id="resourceDensity-0">Low</option>
+            <option value="medium" id="resourceDensity-1">Medium</option>
+            <option value="high" id="resourceDensity-2">High</option>
+        </select>
+        
+        <label for="lionCount" class="tooltip" data-text="Lions eat Zebras." "="">Number of Lions</label>
+        <input name="lionCount" type="number" min="0">
+        
+        <label for="zebraCount" class="tooltip" data-text="Zebras eat Grass.">Number of Zebras</label>
+        <input name="zebraCount" type="number" min="0">
+        
+        <label for="treeCount" class="tooltip" data-text="Trees act as obstacles for Animals and serve no other purpose other than being pretty to look at.">Number of Trees</label>
+        <input name="treeCount" type="number" min="0">
+        
+        <button id="submit" type="submit">Begin Simulation</button>
+        </form>
+      </div>
+      
+      <div id="boardContainer">
+        <div id="gameControls" class="left tooltip" data-text="Escape: Restart game and input new starting conditions
 
 Up Arrow: Increase Game Speed
 
 Down Arrow: Decrease Game Speed
 
-Spacebar: Pause Game.">?</div> <div id="board"></div> </div> </div> <script src="/src.eee867ea.js"></script> </body></html>
+Spacebar: Pause Game.">?</div>
+        <div id="board"></div>
+      </div>
+    </div>
+  </body>
+</html>

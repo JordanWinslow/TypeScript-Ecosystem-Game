@@ -1,9 +1,9 @@
+import chance from "chance";
 import { Lion, Zebra } from "../types/Animals";
+import { Cell } from "../types/Cell";
+import { Dirt } from "../types/Dirt";
 import { Grass, Tree } from "../types/Plants";
 import { Water } from "../types/Water";
-import { Dirt } from "../types/Dirt";
-import { Cell } from "../types/Cell";
-import chance from "chance";
 
 interface IPopulateBoardParams {
   boardState: Cell[][];

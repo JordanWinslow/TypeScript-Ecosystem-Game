@@ -1,14 +1,20 @@
-import { Cell } from "../types/Cell";
-import { Animal } from "../types/Animals";
-import { renderBoard } from "./renderBoard";
 import { cloneDeep } from "lodash";
+import { Animal } from "../types/Animals";
+import { Cell } from "../types/Cell";
 import { processAnimalDesires } from "./processAnimalDesires";
+import { renderBoard } from "./renderBoard";
 
+// How many milliseconds should pass before rendering a new game round
 let GAME_SPEED = 3000;
-let gameInterval;
+// setInterval returns a number associated with the active interval.
+let gameInterval: number;
+// If user has changed game speed (or other options affecting rendering) this will be true
 let shouldUpdateInterval = false;
+// Whether or not game is paused
 let isPaused = false;
+// Current state of board before processing the new round.
 let boardState: Cell[][];
+// The new round is created here then replaces the boardState.
 let updatedBoardState: Cell[][];
 
 function gameLoop(board: HTMLDivElement) {
@@ -18,8 +24,6 @@ function gameLoop(board: HTMLDivElement) {
   }
 
   if (shouldUpdateInterval) {
-    // User has updated the game speed so we must re-create the interval at that speed before
-    // beginning a new round.
     shouldUpdateInterval = false;
     clearInterval(gameInterval);
     gameInterval = setInterval(() => gameLoop(board), GAME_SPEED);

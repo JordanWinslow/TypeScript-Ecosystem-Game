@@ -1,6 +1,6 @@
+import chance from "chance";
 import { Cell } from "../types/Cell";
 import { findNearestCell } from "./findNearestCell";
-import chance from "chance";
 
 // Could be simplified by only passing in the absolute necessary params instead of the entire board state and cell instance
 interface IMoveAnimalTowardDesireParams {

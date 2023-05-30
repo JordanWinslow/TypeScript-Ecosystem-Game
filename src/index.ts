@@ -1,7 +1,7 @@
-import { createInitialBoard } from "./util/createInitialBoard";
+import "./styles.css";
 import { beginGameLoop } from "./util/beginGameLoop";
 import { convertToNumberOrUndefined } from "./util/convertToNumberOrUndefined";
-import "./styles.css";
+import { createInitialBoard } from "./util/createInitialBoard";
 
 // User controls where we let them set up initial board state and then pause / resume / end game
 const initialSetupFormContainer = document.getElementById(
