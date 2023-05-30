@@ -1,11 +1,11 @@
-import { Cell } from "../types/Cell";
-import { Lion, Zebra, Animal } from "../types/Animals";
-import { Water } from "../types/Water";
 import { AnimalDesires } from "../constants/AnimalDesiresEnum";
+import { Animal, Lion, Zebra } from "../types/Animals";
+import { Cell } from "../types/Cell";
+import { Water } from "../types/Water";
 import { moveAnimalTowardDesire } from "../util/moveAnimalTowardDesire";
 
 interface IProcessAnimalDesiresParams {
-  desire: AnimalDesiresEnum;
+  desire: AnimalDesires;
   animalCell: Cell;
   animal: Animal;
   updatedBoardState: Cell[][];
