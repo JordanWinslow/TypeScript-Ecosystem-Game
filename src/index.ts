@@ -11,6 +11,8 @@ const initialSetupForm = document.getElementById(
   "setupForm"
 ) as HTMLFormElement;
 
+const boardContainer: HTMLDivElement =
+  document.getElementById("boardContainer");
 // The board is the actual HTML we want to render. Not to be mistaken for the board state which is Cell[][]
 const board: HTMLDivElement = document.getElementById("board");
 
@@ -36,6 +38,8 @@ initialSetupForm.addEventListener("submit", (event) => {
     beginGameLoop({ initialBoardState, board });
     // hide setup form
     initialSetupFormContainer.classList.add("hidden");
+    // show game board
+    boardContainer.style.display = "flex";
   } catch (error) {
     alert(error);
   }

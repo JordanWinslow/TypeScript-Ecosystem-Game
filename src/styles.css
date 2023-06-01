@@ -9,6 +9,7 @@ form {
 body {
   font-family: "Press Start 2P", cursive;
   font-size: 30px;
+  overflow: hidden;
 }
 
 h3 {
@@ -31,23 +32,21 @@ p {
   border-radius: 30px;
   display: flex;
   flex-direction: column;
-  /* center above all other content */
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
   margin: auto;
-
   width: 400px;
-  height: min-content;
-
   color: darkslategrey;
   text-align: center;
   background-color: #fbab7e;
   background-image: linear-gradient(62deg, #fbab7e 0%, #f7ce68 100%);
-
-  overflow: scroll;
+  overflow-y: scroll;
+  /* IE and Edge disable scrollbar visibility */
+  -ms-overflow-style: none;
+  /* Firefox disable scrollbar visibility */
+  scrollbar-width: none;
+}
+/* Modern Webkit Browsers disable scrollbar visibility*/
+#setupFormContainer::-webkit-scrollbar {
+  display: none;
 }
 @media screen and (max-width: 500px) {
   #setupFormContainer {
@@ -83,7 +82,7 @@ label {
 }
 
 #boardContainer {
-  display: flex;
+  display: none;
   height: 100%;
   overflow: scroll;
 }
