@@ -3,10 +3,7 @@ Created by Jordan Winslow and inspired by Conway's Game of Life.
 
 Live Demo: https://typescript-ecosystem-simulator.netlify.app/
 
-
-Game Setup Form            |  Game In Progress
-:-------------------------:|:-------------------------:
-![](https://i.ibb.co/z8wFGxj/Screenshot-2023-05-26-1-14-55-PM.png)  |  ![](https://i.ibb.co/LZwVhNz/Screenshot-2023-05-26-1-18-16-PM.png)
+![](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMjIxNzYzODNkOWRiMGUzYjcwZjBiODI5YzI5YjM4YTk3ZTUyYTI4YyZlcD12MV9pbnRlcm5hbF9naWZzX2dpZklkJmN0PWc/TI82DhPznZtWh3jnB5/giphy.gif)
 
 ## Game Mechanics
 #### Animal Desires: 
