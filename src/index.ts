@@ -1,46 +1,27 @@
 import "./styles.css";
-import { beginGameLoop } from "./util/beginGameLoop";
-import { convertToNumberOrUndefined } from "./util/convertToNumberOrUndefined";
 import { createInitialBoard } from "./util/createInitialBoard";
+import { renderBoard } from "./util/renderBoard";
 
-// User controls where we let them set up initial board state and then pause / resume / end game
-const initialSetupFormContainer = document.getElementById(
-  "setupFormContainer"
+// We will use this later to create some controls
+const boardContainer = document.getElementById(
+  "boardContainer"
 ) as HTMLDivElement;
-const initialSetupForm = document.getElementById(
-  "setupForm"
-) as HTMLFormElement;
-
-const boardContainer: HTMLDivElement =
-  document.getElementById("boardContainer");
 // The board is the actual HTML we want to render. Not to be mistaken for the board state which is Cell[][]
-const board: HTMLDivElement = document.getElementById("board");
+const board: HTMLDivElement = document.getElementById(
+  "board"
+) as HTMLDivElement;
 
-initialSetupForm.addEventListener("submit", (event) => {
-  // Prevent browser from refreshing the page on submit.
-  event.preventDefault();
+try {
+  // The board state is the JavaScript object representing each cell and it's contents.
+  const initialBoardState = createInitialBoard({
+    boardSize: 10,
+    lionCount: 2,
+    zebraCount: 6,
+    treeCount: 10,
+    resourceDensity: "high",
+  });
 
-  const formDataIterable = new FormData(initialSetupForm);
-  // FormData will always be strings, so we will need to convert to a number before sending to createInitialBoard
-  const { boardSize, lionCount, zebraCount, resourceDensity, treeCount } =
-    Object.fromEntries(formDataIterable);
-
-  try {
-    // The board state is the JavaScript object representing each cell and it's contents.
-    const initialBoardState = createInitialBoard({
-      boardSize: convertToNumberOrUndefined(boardSize),
-      lionCount: convertToNumberOrUndefined(lionCount),
-      zebraCount: convertToNumberOrUndefined(zebraCount),
-      treeCount: convertToNumberOrUndefined(treeCount),
-      resourceDensity,
-    });
-
-    beginGameLoop({ initialBoardState, board });
-    // hide setup form
-    initialSetupFormContainer.classList.add("hidden");
-    // show game board
-    boardContainer.style.display = "flex";
-  } catch (error) {
-    alert(error);
-  }
-});
+  renderBoard({ boardState: initialBoardState, board });
+} catch (error) {
+  alert(error);
+}

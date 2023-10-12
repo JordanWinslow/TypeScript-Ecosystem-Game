@@ -1,61 +1,5 @@
-import chance from "chance";
-import { Lion, Zebra } from "../types/Animals";
 import { Cell } from "../types/Cell";
 import { Dirt } from "../types/Dirt";
-import { Grass, Tree } from "../types/Plants";
-import { Water } from "../types/Water";
-
-interface IPopulateBoardParams {
-  boardState: Cell[][];
-  boardSize: number;
-  elementCount: number;
-  elementType: "tree" | "grass" | "water" | "lion" | "zebra";
-}
-
-function populateBoard({
-  boardState,
-  boardSize,
-  elementCount,
-  elementType,
-}: IPopulateBoardParams) {
-  console.log("Populating board with " + elementCount + " " + elementType);
-  for (
-    let elementsCreated = 0;
-    elementsCreated < elementCount;
-    elementsCreated++
-  ) {
-    const randomCellX = chance().integer({ min: 0, max: boardSize - 1 });
-    const randomCellY = chance().integer({ min: 0, max: boardSize - 1 });
-    const randomCellContents = boardState[randomCellX][randomCellY].contents;
-    const cellContainsOnlyDirt =
-      randomCellContents.length === 1 && randomCellContents[0] instanceof Dirt;
-
-    if (cellContainsOnlyDirt) {
-      switch (elementType) {
-        case "lion":
-          randomCellContents.push(new Lion());
-          break;
-        case "zebra":
-          randomCellContents.push(new Zebra());
-          break;
-        case "tree":
-          randomCellContents.push(new Tree());
-          break;
-        case "grass":
-          randomCellContents.push(new Grass());
-          break;
-        case "water":
-          // first remove the dirt to replace it with water
-          randomCellContents.pop();
-          randomCellContents.push(new Water());
-      }
-    } else {
-      // random cell already had something so choose new cell recursively with 1 count until we succeed.
-      populateBoard({ boardState, boardSize, elementCount: 1, elementType });
-    }
-  }
-}
-
 interface ICreateInitialBoardParams {
   boardSize?: number;
   lionCount?: number;
@@ -95,29 +39,6 @@ export function createInitialBoard({
     }
     boardState.push(newRow);
   }
-  // Now that every cell contains dirt, randomly insert plants, animals and water
-  const grassAndWaterCount =
-    resourceDensity === "high"
-      ? Math.round(boardSize / 2)
-      : resourceDensity === "medium"
-      ? Math.round(boardSize / 4)
-      : Math.round(boardSize / 6);
-  const elementsToCreate = [
-    { type: "tree" as const, count: treeCount },
-    { type: "zebra" as const, count: zebraCount },
-    { type: "lion" as const, count: lionCount },
-    { type: "grass" as const, count: grassAndWaterCount },
-    { type: "water" as const, count: grassAndWaterCount },
-  ];
-
-  elementsToCreate.forEach((element) => {
-    populateBoard({
-      boardState,
-      boardSize,
-      elementType: element.type,
-      elementCount: element.count,
-    });
-  });
 
   return boardState;
 }
