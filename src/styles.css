@@ -55,6 +55,7 @@ p {
 }
 
 .dirt {
+  /* https://www.magicpattern.design/tools/css-backgrounds */
   background-color: #b67437;
   opacity: 1;
   background-image: radial-gradient(#784e26 0.75px, transparent 0.75px),

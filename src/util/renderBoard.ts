@@ -27,6 +27,8 @@ export function renderBoard({ board, boardState }: IRenderBoardParams) {
         if (content instanceof Dirt) {
           // Dirt is the default and it uses CSS instead of an icon
           gridCell.classList.add("dirt");
+          // uncomment this to test each cell appears where we expect!
+          // gridCell.innerHTML = `X: ${cell.x} Y: ${cell.y}`;
         }
       });
 
