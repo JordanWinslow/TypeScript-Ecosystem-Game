@@ -1,7 +1,7 @@
 import { Lion, Zebra } from "./Animals";
+import { Dirt } from "./Dirt";
 import { Grass, Tree } from "./Plants";
 import { Water } from "./Water";
-import { Dirt } from "./Dirt";
 
 interface ICellConstructor {
   x: Cell["x"];
@@ -21,15 +21,6 @@ export class Cell {
   }
 
   getNearestCellIndexes() {
-    return [
-      [this.x - 1, this.y],
-      [this.x + 1, this.y],
-      [this.x, this.y - 1],
-      [this.x, this.y + 1],
-      [this.x - 1, this.y - 1],
-      [this.x + 1, this.y + 1],
-      [this.x + 1, this.y - 1],
-      [this.x - 1, this.y + 1],
-    ];
+    // TODO
   }
 }

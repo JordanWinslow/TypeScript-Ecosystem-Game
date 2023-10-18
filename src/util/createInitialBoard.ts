@@ -24,9 +24,13 @@ function populateBoard({
     elementsCreated < elementCount;
     elementsCreated++
   ) {
+    // Pick a random cell on the board
     const randomCellX = chance().integer({ min: 0, max: boardSize - 1 });
     const randomCellY = chance().integer({ min: 0, max: boardSize - 1 });
+
+    // Get ready to put something in the contents array of the random cell
     const randomCellContents = boardState[randomCellX][randomCellY].contents;
+    // Don't try to put something in a cell that already contains something other than dirt!
     const cellContainsOnlyDirt =
       randomCellContents.length === 1 && randomCellContents[0] instanceof Dirt;
 
@@ -51,6 +55,7 @@ function populateBoard({
       }
     } else {
       // random cell already had something so choose new cell recursively with 1 count until we succeed.
+      // Alternatively we could filter all cells out that contain something other than dirt instead of randomly guessing.
       populateBoard({ boardState, boardSize, elementCount: 1, elementType });
     }
   }
@@ -66,6 +71,7 @@ interface ICreateInitialBoardParams {
 
 // Initialize the board with dirt, then populate it with plants, animals and water
 export function createInitialBoard({
+  // Set defaults if none are supplied
   boardSize = 20,
   resourceDensity = "medium",
   treeCount = 5,
@@ -103,6 +109,8 @@ export function createInitialBoard({
       ? Math.round(boardSize / 4)
       : Math.round(boardSize / 6);
   const elementsToCreate = [
+    // without "as const" TypeScript will infer the type to just be a string!
+    // But the actual word in the string is what we want so as const makes this the exact word!
     { type: "tree" as const, count: treeCount },
     { type: "zebra" as const, count: zebraCount },
     { type: "lion" as const, count: lionCount },

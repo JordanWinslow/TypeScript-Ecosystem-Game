@@ -1,5 +1,6 @@
 export class Water {
   type = "water";
-  amount = Infinity;
   isObstacle = true;
+  // Not used, see if you can implement a depleting water source!
+  amount = Infinity;
 }

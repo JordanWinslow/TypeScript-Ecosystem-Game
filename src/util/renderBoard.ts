@@ -28,8 +28,8 @@ export function renderBoard({ board, boardState }: IRenderBoardParams) {
 
       cell.contents.forEach((content) => {
         if (content instanceof Lion || content instanceof Zebra) {
-          const tooltipText = content.getTooltipText();
-          gridCell.innerHTML = `<span class="tooltip" data-text="${tooltipText}">${content.icon}</span>`;
+          const tooltipText = "TODO!";
+          gridCell.innerHTML = content.icon;
         } else if (content instanceof Grass || content instanceof Tree) {
           gridCell.innerHTML = content.icon;
         } else if (content instanceof Water) {
